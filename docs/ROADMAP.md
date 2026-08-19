@@ -1,0 +1,126 @@
+# N-AutoLab Development Roadmap
+
+The roadmap is capability-gated. A later phase does not begin until the preceding phase's acceptance criteria, safety evidence, tests, documentation, and operator visibility are complete.
+
+## Phase 0 — Foundation & Architecture Contract
+
+- Establish the Python `src` layout and package boundaries.
+- Define architecture, dependency, safety, development, Git, and backup contracts.
+- Pin and map PyLabRobot, Orca, IvoryOS, and N-AutoProv V1 references.
+- Establish structural tests, Windows setup, and a truthful status launcher.
+- Perform no hardware access and implement no Phase 1 runtime capability.
+
+## Phase 1 — Core + Simulation GUI
+
+Implement general-purpose:
+
+```text
+Sample
+Station
+Device
+Action
+Recipe
+
+SampleRegistry
+StationRegistry
+DeviceRegistry
+
+SimulationTransporter
+
+WorkflowExecutor
+Event system
+Preflight
+```
+
+Provide minimal desktop Qt visibility:
+
+```text
+Dashboard
+Station Map
+Samples
+Devices
+Recipe
+Workflow
+Logs
+```
+
+Simulation-only golden path:
+
+```text
+Storage:S1
+→ HotPlate
+→ SpinCoater
+→ HotPlate
+→ Storage:S1
+```
+
+No real hardware is authorized in this phase unless a later explicit plan revises the phase gate.
+
+## Phase 2 — Robot Integration
+
+References:
+
+- PyLabRobot: device/backend architecture.
+- Orca: transporter role.
+- N-AutoProv V1: robot, gripper, motion, teach-point, and safety behavior.
+
+Sequence:
+
+1. Specify transporter and robot capabilities.
+2. Implement and test `SimulationRobotBackend`.
+3. Audit V1 behavior and vendor licensing/API requirements.
+4. Implement `RealRobotBackend` behind explicit configuration and preflight.
+5. Validate with an approved, staged hardware test plan.
+
+## Phase 3 — Transport + Station Hardware Validation
+
+- Validate physical station pose references, Safe-Z/approach policies, occupancy, transfer recovery, and transport graph edges.
+- Add guarded calibration and verification UX.
+- Prove the transporter never turns missing or stale calibration into a fake success.
+
+## Phase 4 — Spin Coater Integration
+
+- Define device capability and explicit simulation backend.
+- Obtain and document the actual vendor protocol.
+- Implement and validate a real backend, stop behavior, fault reporting, and GUI visibility.
+- V1 does not contain a completed vendor command protocol.
+
+## Phase 5 — Hot Plate Integration
+
+- Define temperature-control capabilities and explicit simulator.
+- Study V1 Modbus behavior and fail-closed safety rules.
+- Implement a real backend with independent limits, connection status, standby, and abort/shutdown semantics.
+
+## Phase 6 — Production Recipe Workflow
+
+- Promote validated actions into production workflows.
+- Add recipe versioning/migration, resource conflict handling, recovery, audit history, and production preflight.
+- Validate an end-to-end workflow without GUI-owned logic.
+
+## Phase 7 — D405 Vision-Guided Pick
+
+- Add a camera backend and calibrated coordinate relationship.
+- Implement vision-guided station pick correction with confidence, bounds, and operator-visible evidence.
+- Keep vision failure from silently degrading to uncorrected motion.
+
+## Phase 8 — Spectrometer Integration
+
+- Complete OtO SDK/license review and 64-bit runtime compatibility plan.
+- Implement explicit simulation and real spectrometer backends.
+- Add acquisition, metadata, calibration, file/provenance, error, and result visibility.
+
+## Phase 9 — Measurement / Analysis / Data Provenance
+
+- Introduce experiment, sample, action, raw-data, result, calibration, and software-version provenance.
+- Support analysis without coupling instruments to one material system.
+- Add export and traceability tests.
+
+## Phase 10 — Closed-Loop / Autonomous Experiment Optimization
+
+- Define optimization objectives and constraints over stable workflow/data contracts.
+- Add safe proposal, validation, approval, execution, and result-feedback loops.
+- Evaluate optimizers only after deterministic execution, provenance, abort, and recovery are production-ready.
+
+## Explicitly Deferred Complexity
+
+Databases, Docker, REST services, Flask/FastAPI, MQTT, Redis, Celery, microservices, plugin frameworks, cloud backends, AI agents, and Bayesian optimization are not introduced without a future requirement and ADR.
