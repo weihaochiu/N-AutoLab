@@ -12,27 +12,39 @@ The roadmap is capability-gated. A later phase does not begin until the precedin
 
 ## Phase 1 — Core + Simulation GUI
 
-Implement general-purpose:
+Phase 1 is divided into reviewable increments. Completion of one increment does
+not authorize work in the next.
+
+### Phase 1A — Core Domain + Registry + Demo Lab Configuration (Complete)
+
+- Implement general-purpose `Sample`, `Station`, `Device`, `Action`, `Recipe`,
+  and `RecipeStep` declarations.
+- Implement owned in-memory `SampleRegistry`, `StationRegistry`, and
+  `DeviceRegistry` collections.
+- Establish `LabState` as the canonical, atomic location/occupancy mutation API.
+- Load a portable YAML demo lab with truthful `NOT_IMPLEMENTED` devices.
+- Add unit, integration, configuration, and architecture boundary tests.
+- Perform no workflow execution, simulation transport, GUI, or hardware access.
+
+### Phase 1B — Workflow State + Events + Simulation Transport
+
+- Define resolved `Workflow` and step lifecycle state separately from `Recipe`.
+- Implement an event system and preflight validation.
+- Implement `SimulationTransporter` over an explicit station/transport model.
+- Implement `WorkflowExecutor` only after the above contracts are accepted.
+- Validate the simulation-only golden path:
 
 ```text
-Sample
-Station
-Device
-Action
-Recipe
-
-SampleRegistry
-StationRegistry
-DeviceRegistry
-
-SimulationTransporter
-
-WorkflowExecutor
-Event system
-Preflight
+Storage:S1
+→ HotPlate
+→ SpinCoater
+→ HotPlate
+→ Storage:S1
 ```
 
-Provide minimal desktop Qt visibility:
+### Phase 1C — Minimal Desktop Qt Visibility
+
+Provide application-backed desktop views for:
 
 ```text
 Dashboard
@@ -44,17 +56,10 @@ Workflow
 Logs
 ```
 
-Simulation-only golden path:
+Widgets display state and issue application commands; they do not own registry,
+workflow, simulation, or safety logic.
 
-```text
-Storage:S1
-→ HotPlate
-→ SpinCoater
-→ HotPlate
-→ Storage:S1
-```
-
-No real hardware is authorized in this phase unless a later explicit plan revises the phase gate.
+No real hardware is authorized anywhere in Phase 1.
 
 ## Phase 2 — Robot Integration
 

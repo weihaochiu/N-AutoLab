@@ -1,7 +1,7 @@
 # N-AutoLab Architecture Contract
 
-Status: Accepted for Phase 0
-Scope: Mandatory direction for all future implementation
+Status: Accepted; Phase 1A implementation recorded
+Scope: Mandatory direction for all implementation
 
 ## 1. Platform Boundary
 
@@ -114,7 +114,7 @@ HotPlateDevice
 
 The same separation applies to spin coaters, spectrometers, cameras, SMUs, pumps, ovens, and unknown future devices. Reference projects are not runtime dependencies.
 
-Future `Device` specification:
+Phase 1A `Device` description:
 
 ```text
 id
@@ -157,11 +157,33 @@ metadata
 
 Robot coordinates must not be distributed through workflow code. A station holds a `pose_reference`; backend- and site-specific configuration resolves that reference. Occupancy and capacity must be explicit and independently testable.
 
-`StationRegistry`, `DeviceRegistry`, `SampleRegistry`, `StationMap`, and `TransportGraph` are Phase 1 or later work. Phase 0 defines only their boundaries and names.
+Phase 1A implements `StationRegistry`, `DeviceRegistry`, and `SampleRegistry` as
+deterministic in-memory collections. `StationMap` and `TransportGraph` remain
+deferred.
+
+### Canonical location and occupancy state
+
+`Sample.current_location` and `Station.occupant_ids` are two read-only public
+views of one logical relationship. `resources.LabState` owns the only supported
+mutation operations:
+
+```text
+place_sample
+remove_sample
+relocate_sample
+```
+
+Each operation resolves all resources and validates source agreement,
+destination enabled state, duplicate occupancy, and capacity before changing
+either object. A rejected operation must leave both views and sample history
+unchanged. Registries are owned instances, not process-global mutable state.
+
+This is an in-memory domain transaction boundary, not a workflow executor,
+transporter, database transaction, or hardware command.
 
 ## 7. Sample Contract
 
-The future sample concept must support, without a hard-coded closed enum:
+The Phase 1A sample model supports, without a hard-coded sample-type enum:
 
 ```text
 id
@@ -214,7 +236,7 @@ Whenever practical, simulation is implemented and tested before a real backend. 
 
 ## 11. Safety and Failure Contract
 
-- Phase 0 performs zero hardware access.
+- Phase 1A performs zero hardware access.
 - Real commands require explicit real backends, capability checks, connection checks, and preflight.
 - Hardware and transport failures propagate as visible errors; they are not rewritten as success.
 - Abort and shutdown semantics must be device-aware and fail closed.
@@ -225,4 +247,6 @@ Whenever practical, simulation is implemented and tested before a real backend. 
 
 Major changes must update this document, [docs/REFERENCE_ARCHITECTURE.md](docs/REFERENCE_ARCHITECTURE.md), the relevant ADR, [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md), and [OPEN_ITEMS.md](OPEN_ITEMS.md). Third-party implementation cannot be copied without explicit license review.
 
-Phase 0 ends at documentation, package boundaries, launchers, and tests. It does not authorize Phase 1 implementation.
+Phase 1A implements only pure domain models, in-memory registries, canonical
+resource-state transitions, and portable demo configuration. Workflow runtime,
+events, simulation transport, GUI, and all hardware access remain deferred.

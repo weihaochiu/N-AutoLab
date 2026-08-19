@@ -62,6 +62,13 @@ docs/adr/
 
 Do not copy third-party implementation without license review. Architecture concepts may be studied and attributed. Dependencies or copied/adapted source require an explicit decision, compatibility review, attribution, and distribution plan. Orca source is AGPL-3.0-only and is not copied.
 
+## Rule 11 — Preserve canonical resource state
+
+Application, workflow, configuration, simulation, and future GUI code must use
+`LabState` placement/removal/relocation operations. They must not mutate sample
+location or station occupants independently. A rejected transition must not
+partially mutate state.
+
 ## Python and Project Style
 
 - Python 3.11 or newer.

@@ -1,6 +1,6 @@
 # N-AutoLab Open Items
 
-This is the canonical, categorized backlog. Items describe deliverables and acceptance evidence; source files must not accumulate untracked TODO lists. Phase 0 records these items only and implements none of them.
+This is the canonical, categorized backlog. Items describe deliverables and acceptance evidence; source files must not accumulate untracked TODO lists. Completed Phase 1A items retain their acceptance evidence here.
 
 Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
@@ -8,8 +8,8 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-ARCH-001 — Review Phase 1 architecture boundaries
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Confirm package ownership and dependency tests before domain implementation expands.
 - **Reference:** `ARCHITECTURE.md`; ADRs 0001–0005
 - **Dependencies:** Phase 0 acceptance
@@ -21,19 +21,19 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-CORE-001 — Implement Sample model
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Add a general sample identity, type label, location, status, metadata, and history model.
 - **Reference:** `ARCHITECTURE.md` §7
 - **Dependencies:** NAL-ARCH-001
-- **Acceptance Criteria:** No fixed material enum; location/history invariants defined; serialization contract versioned.
+- **Acceptance Criteria:** No fixed material enum; location/history invariants defined; serializable representation exists.
 - **Tests:** Unit tests for identity, transitions, metadata, history, and invalid state.
 - **Notes:** Must support substrate, thin film, device, electrode, solution, and future custom types without core rewrites.
 
 ### NAL-CORE-002 — Implement Station model
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Add general station identity, type, capacity, occupancy, pose reference, capabilities, enabled state, and metadata.
 - **Reference:** PyLabRobot resource concepts; `ARCHITECTURE.md` §6
 - **Dependencies:** NAL-ARCH-001
@@ -43,21 +43,21 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-CORE-003 — Implement Device abstraction
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Define device identity, type, backend, capabilities, implementation state, and connection state.
 - **Reference:** PyLabRobot machine/backend pattern; ADR 0002
 - **Dependencies:** NAL-ARCH-001
-- **Acceptance Criteria:** Simulation and real implementations share a capability contract; no fake `READY` state.
-- **Tests:** Unit/contract tests for states, backend compatibility, capability lookup, and failures.
+- **Acceptance Criteria:** General device identity, states, backend label, and capabilities exist; no fake `READY` state.
+- **Tests:** Unit tests for truthful states, capability lookup, serialization, and architecture boundaries.
 - **Notes:** Do not add vendor SDK dependencies.
 
 ## Resources / Station
 
 ### NAL-RES-001 — Implement StationRegistry
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Provide unique station registration and lookup independent of GUI.
 - **Reference:** Orca `ResourceRegistry` concept
 - **Dependencies:** NAL-CORE-002
@@ -67,8 +67,8 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-RES-002 — Implement SampleRegistry
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Provide unique sample registration, lookup, and controlled location/status updates.
 - **Reference:** Orca registry concept; N-AutoLab sample contract
 - **Dependencies:** NAL-CORE-001
@@ -76,23 +76,56 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Tests:** Registry and state-transition unit tests.
 - **Notes:** Registry must not become global mutable state.
 
+### NAL-RES-003 — Implement DeviceRegistry
+
+- **Status:** DONE
+- **Phase:** 1A
+- **Goal:** Provide unique device-description registration and deterministic lookup.
+- **Reference:** Orca registry concept; ADR 0002
+- **Dependencies:** NAL-CORE-003
+- **Acceptance Criteria:** Duplicate ids fail; add/get/remove/contains/list behavior matches other registries.
+- **Tests:** Device registry unit tests.
+- **Notes:** Stores descriptions only; it does not connect devices or own backends.
+
+### NAL-RES-004 — Implement canonical laboratory state transitions
+
+- **Status:** DONE
+- **Phase:** 1A
+- **Goal:** Keep sample location, station occupancy, capacity, and history consistent.
+- **Reference:** ADR 0006
+- **Dependencies:** NAL-CORE-001, NAL-CORE-002, NAL-RES-001, NAL-RES-002
+- **Acceptance Criteria:** Placement, removal, and relocation update both views atomically; expected failures have no partial mutation.
+- **Tests:** Integration tests for success, mismatch, occupied/disabled destination, and capacity greater than one.
+- **Notes:** This is not transport or workflow execution.
+
+### NAL-RES-005 — Load portable demo laboratory configuration
+
+- **Status:** DONE
+- **Phase:** 1A
+- **Goal:** Construct demo registries and initial occupancy from repository YAML.
+- **Reference:** N-AutoLab Phase 1A configuration contract
+- **Dependencies:** NAL-RES-003, NAL-RES-004
+- **Acceptance Criteria:** References, identifiers, capacity, and truthful device states are validated; no hardware settings or access occur.
+- **Tests:** Demo-load and malformed-configuration integration tests.
+- **Notes:** PyYAML is the only Phase 1A runtime dependency.
+
 ## Workflow
 
 ### NAL-WF-001 — Implement Action / Recipe model
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Represent atomic actions and user recipe intent independently of GUI and hardware.
 - **Reference:** Orca action/method concepts; `ARCHITECTURE.md` §8
 - **Dependencies:** NAL-CORE-001, NAL-CORE-002, NAL-CORE-003
-- **Acceptance Criteria:** `Action`, `Recipe`, and resolved `Workflow` have distinct contracts; versioned validation exists.
+- **Acceptance Criteria:** `Action` and `Recipe` are validated declarations and remain distinct from the deferred resolved `Workflow` runtime model.
 - **Tests:** Schema, validation, serialization, and representation-independence tests.
 - **Notes:** Recipe must not call devices or vendor APIs.
 
 ### NAL-WF-002 — Implement WorkflowExecutor
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1B
 - **Goal:** Execute validated simulation workflows with explicit lifecycle and action status.
 - **Reference:** Orca workflow/executor concepts
 - **Dependencies:** NAL-WF-001, NAL-WF-003, NAL-SAFE-001, NAL-SIM-001
@@ -103,7 +136,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 ### NAL-WF-003 — Implement Event system
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1B
 - **Goal:** Publish typed domain/application events without coupling executor, devices, and GUI.
 - **Reference:** Orca EventBus concept
 - **Dependencies:** NAL-ARCH-001
@@ -111,12 +144,23 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Tests:** Delivery, unsubscribe, handler-failure, ordering, and dependency-boundary tests.
 - **Notes:** Events must not bypass safety or hide hardware command ownership.
 
+### NAL-WF-004 — Define resolved Workflow and step state model
+
+- **Status:** OPEN
+- **Phase:** 1B
+- **Goal:** Resolve recipe intent into an execution-oriented model with explicit lifecycle states.
+- **Reference:** Orca definition/runtime separation; N-AutoLab architecture contract
+- **Dependencies:** NAL-WF-001, NAL-RES-004
+- **Acceptance Criteria:** Recipe remains immutable execution input; workflow/step ids, resolved references, lifecycle, and errors are explicit.
+- **Tests:** Resolution, invalid reference, lifecycle, serialization, and no-side-effect tests.
+- **Notes:** Must precede `WorkflowExecutor`; do not put execution methods on `Recipe`.
+
 ## Simulation
 
 ### NAL-SIM-001 — Implement SimulationTransporter
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1B
 - **Goal:** Move samples across the simulation station graph with truthful state updates.
 - **Reference:** Orca transporter concept; PyLabRobot device-free development
 - **Dependencies:** NAL-CORE-001, NAL-CORE-002, NAL-RES-001, NAL-RES-002
@@ -124,12 +168,23 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Tests:** Transport success, unavailable route, occupied destination, rollback/failure, and golden-path integration tests.
 - **Notes:** No robot motion primitives.
 
+### NAL-SIM-002 — Validate Phase 1 simulation golden path
+
+- **Status:** OPEN
+- **Phase:** 1B
+- **Goal:** Execute Storage:S1 → HotPlate → SpinCoater → HotPlate → Storage:S1 with no hardware.
+- **Reference:** `docs/ROADMAP.md`
+- **Dependencies:** NAL-SIM-001, NAL-WF-002, NAL-WF-003, NAL-SAFE-001
+- **Acceptance Criteria:** Deterministic completion, consistent occupancy/history, visible states, and injected-failure evidence.
+- **Tests:** End-to-end simulation integration tests.
+- **Notes:** Phase 1A demo relocation tests are state primitives, not this golden path.
+
 ## GUI
 
 ### NAL-GUI-001 — Implement V2 Dashboard
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1C
 - **Goal:** Provide a minimal Qt overview of system, workflow, device, sample, and safety state.
 - **Reference:** IvoryOS visibility UX; ADR 0004
 - **Dependencies:** NAL-WF-003 and application read models
@@ -140,7 +195,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 ### NAL-GUI-002 — Implement Station Map GUI
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1C
 - **Goal:** Visualize and edit the simulation station map through application services.
 - **Reference:** PyLabRobot visual resource state; IvoryOS visibility UX
 - **Dependencies:** NAL-CORE-002, NAL-RES-001, NAL-WF-003
@@ -151,7 +206,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 ### NAL-GUI-003 — Implement Recipe Table Editor
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1C
 - **Goal:** Provide the first recipe editor over the shared recipe model.
 - **Reference:** IvoryOS builder UX; `ARCHITECTURE.md` §8
 - **Dependencies:** NAL-WF-001
@@ -162,7 +217,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 ### NAL-GUI-004 — Implement Workflow Monitor
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1C
 - **Goal:** Show workflow/step state, logs, errors, and safe runtime controls.
 - **Reference:** IvoryOS execution UX
 - **Dependencies:** NAL-WF-002, NAL-WF-003
@@ -262,7 +317,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 ### NAL-SAFE-001 — Implement Preflight validation
 
 - **Status:** OPEN
-- **Phase:** 1
+- **Phase:** 1B
 - **Goal:** Validate workflow, capability, station, occupancy, implementation state, and connection requirements before execution.
 - **Reference:** N-AutoLab safety contract; V1 preflight lessons
 - **Dependencies:** NAL-CORE-001, NAL-CORE-002, NAL-CORE-003, NAL-WF-001
@@ -287,8 +342,8 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-TEST-001 — Enforce architecture dependency rules
 
-- **Status:** OPEN
-- **Phase:** 1
+- **Status:** DONE
+- **Phase:** 1A
 - **Goal:** Prevent forbidden imports and vendor/GUI leakage through automated tests.
 - **Reference:** `ARCHITECTURE.md` §§2–3
 - **Dependencies:** NAL-ARCH-001

@@ -8,7 +8,9 @@ version = "0.0.0"
 description = "Modular Laboratory Automation and Experiment Orchestration Platform"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "PyYAML>=6,<7",
+]
 
 [project.optional-dependencies]
 dev = [

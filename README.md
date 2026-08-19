@@ -2,7 +2,7 @@
 
 Modular Laboratory Automation and Experiment Orchestration Platform
 
-**Current Development Stage:** Phase 0 — Foundation & Architecture Contract
+**Current Development Stage:** Phase 1A — Core Domain + Registry + Demo Lab Configuration
 
 **Hardware Execution:** Not implemented / disabled
 
@@ -49,18 +49,24 @@ Exact branches, inspected commits, files, licenses, adopted concepts, and exclus
 ## Repository Structure
 
 ```text
-src/nautolab/       Python package and architectural layer placeholders
+src/nautolab/       Python package, Phase 1A domain models, and registries
 tests/              Unit, integration, architecture, and GUI test areas
-config/             Future portable configuration examples and schemas
+config/             Portable configuration examples and schemas
 docs/               Reference, roadmap, rules, backup, and ADR documents
-scripts/            Future project-maintenance scripts
+scripts/            Hardware-safe diagnostics and future maintenance scripts
 ```
 
 All Python code uses the `nautolab` package and a `src` layout.
 
 ## Development Status
 
-Phase 0 defines contracts and creates only empty package boundaries, documentation, launchers, and structural tests. It deliberately does not implement registries, workflow execution, event delivery, simulation transport, hardware access, a station map, recipe editors, or a GUI.
+Phase 1A implements general-purpose `Sample`, `Station`, `Device`, `Action`,
+`Recipe`, and `RecipeStep` models; deterministic sample/station/device registries;
+canonical in-memory placement/relocation state; and a validated YAML demo lab.
+
+It deliberately does **not** implement workflow execution, event delivery,
+simulation transport, hardware access, a real station map, recipe editors, or a
+GUI. Demo devices report `NOT_IMPLEMENTED` and `DISCONNECTED` truthfully.
 
 ## Setup
 
@@ -86,7 +92,17 @@ py -3.11 -m venv .venv
 run_windows.bat
 ```
 
-The Phase 0 launcher prints foundation status only. It does not open a GUI or contact hardware.
+The launcher prints Phase 1A capability status only. It does not open a GUI or
+contact hardware.
+
+To inspect the in-memory demo lab:
+
+```powershell
+.venv\Scripts\python.exe scripts\show_demo_lab_state.py
+```
+
+This diagnostic loads configuration and prints state; it does not execute a
+workflow or move a physical or simulated sample.
 
 ## Tests
 
@@ -98,8 +114,16 @@ After setup:
 
 ## Roadmap
 
-Phase 1 will introduce the general-purpose domain models, registries, simulation-only golden path, preflight, event system, workflow executor, and minimal desktop visibility. Later phases add hardware one family at a time. See [docs/ROADMAP.md](docs/ROADMAP.md) and [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md).
+Phase 1A is complete at the repository level. Phase 1B is planned to introduce
+resolved workflow state, events, preflight, `SimulationTransporter`, the
+workflow executor, and a simulation-only golden path. Phase 1C adds minimal
+desktop visibility. Later phases add hardware one family at a time. See
+[docs/ROADMAP.md](docs/ROADMAP.md) and
+[docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md).
 
 ## Safety
 
-Phase 0 has zero hardware access. No robot, gripper, serial port, TCP device, vendor DLL, camera, or spectrometer is opened. Future real hardware must use explicit backends, fail closed, expose truthful implementation and connection states, pass preflight, and have tests plus operator-visible status.
+Phase 1A has zero hardware access. No robot, gripper, serial port, TCP device,
+vendor DLL, camera, or spectrometer is opened. Future real hardware must use
+explicit backends, fail closed, expose truthful implementation and connection
+states, pass preflight, and have tests plus operator-visible status.

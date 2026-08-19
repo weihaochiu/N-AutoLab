@@ -3,37 +3,39 @@
 Status vocabulary:
 
 - `SPECIFIED`: architecture and acceptance direction exist; implementation does not.
+- `IMPLEMENTED`: the scoped software capability exists and has passing tests.
 - `NOT_IMPLEMENTED`: no trustworthy implementation exists.
 - `SIMULATED`: an explicit simulation exists and is labeled.
-- `REAL_AVAILABLE`: a real backend exists and has passed the required validation.
+- `REAL_AVAILABLE`: a real backend exists and has passed required validation.
 - `ERROR`: a configured capability is unhealthy or invalid.
 
-Phase 0 uses `YES`/`NO` only to report evidence, not readiness.
+`IMPLEMENTED` for a model or registry does not imply workflow execution,
+simulation, GUI availability, or real-hardware readiness.
 
 | Capability | Architecture Defined | Simulation | Real Hardware | GUI | Tests | Status | Target Phase | Reference |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| General-purpose Sample model | YES | NO | N/A | NO | NO | SPECIFIED | 1 | N-AutoLab |
-| Station model | YES | NO | N/A | NO | NO | SPECIFIED | 1 | PyLabRobot resource concepts + N-AutoLab |
-| Resource relationships | YES | NO | N/A | NO | NO | SPECIFIED | 1 | PyLabRobot |
-| Device abstraction | YES | NO | NO | NO | NO | SPECIFIED | 1 | PyLabRobot |
-| Device/backend pattern | YES | NO | NO | NO | NO | SPECIFIED | 1 | PyLabRobot |
-| Device implementation state | YES | NO | NO | NO | NO | SPECIFIED | 1 | N-AutoLab |
-| SampleRegistry | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1 | Orca registry concept |
-| StationRegistry | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1 | Orca registry concept |
-| DeviceRegistry | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1 | Orca registry concept |
-| StationMap | YES | NO | NO | NO | NO | SPECIFIED | 1 | PyLabRobot + Orca; V1 data reference |
-| TransportGraph | YES | NO | NO | NO | NO | SPECIFIED | 1 | Orca SystemMap concept |
-| Transporter pattern | YES | NO | NO | NO | NO | SPECIFIED | 1 | Orca |
-| Action model | YES | NO | N/A | NO | NO | SPECIFIED | 1 | Orca + N-AutoLab |
-| Recipe model | YES | NO | N/A | NO | NO | SPECIFIED | 1 | N-AutoLab; V1 migration reference |
-| Workflow model | YES | NO | N/A | NO | NO | SPECIFIED | 1 | Orca |
-| WorkflowExecutor | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 1 | Orca concept |
-| Event system | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1 | Orca concept |
-| Preflight | YES | NO | NO | NO | NO | SPECIFIED | 1 | N-AutoLab + V1 safety behavior |
-| Workflow UX | YES | NO | N/A | NO | NO | SPECIFIED | 1 | IvoryOS UX |
-| Devices Page / direct control UX | YES | NO | NO | NO | NO | SPECIFIED | 1+ | IvoryOS UX |
-| Logs / result visibility | YES | NO | NO | NO | NO | SPECIFIED | 1+ | IvoryOS UX |
-| SimulationTransporter | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1 | Orca + N-AutoLab |
+| General-purpose Sample model | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | N-AutoLab |
+| Station model | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | PyLabRobot concept + N-AutoLab |
+| Canonical location/occupancy state | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | N-AutoLab ADR 0006 |
+| Device description/state model | YES | N/A | NO | NO | YES | IMPLEMENTED | 1A | PyLabRobot concept + N-AutoLab |
+| Device/backend pattern | YES | NO | NO | NO | Boundary tests | SPECIFIED | 2+ | PyLabRobot |
+| SampleRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca registry concept |
+| StationRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca registry concept |
+| DeviceRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca registry concept |
+| Action declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca concept + N-AutoLab |
+| Recipe / RecipeStep declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | N-AutoLab; V1 reference |
+| Demo lab YAML + loader | YES | N/A | DISABLED | Console diagnostic | YES | IMPLEMENTED | 1A | N-AutoLab |
+| StationMap | YES | NO | NO | NO | NO | SPECIFIED | 1B | PyLabRobot + Orca; V1 data reference |
+| TransportGraph | YES | NO | NO | NO | NO | SPECIFIED | 1B | Orca SystemMap concept |
+| Transporter pattern | YES | NO | NO | NO | NO | SPECIFIED | 1B | Orca |
+| Workflow model | YES | NO | N/A | NO | NO | SPECIFIED | 1B | Orca concept |
+| WorkflowExecutor | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 1B | Orca concept |
+| Event system | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1B | Orca concept |
+| Preflight | YES | NO | NO | NO | NO | SPECIFIED | 1B | N-AutoLab + V1 safety behavior |
+| SimulationTransporter | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1B | Orca + N-AutoLab |
+| Workflow UX | YES | NO | N/A | NO | NO | SPECIFIED | 1C | IvoryOS UX |
+| Devices Page / direct control UX | YES | NO | NO | NO | NO | SPECIFIED | 1C | IvoryOS UX |
+| Logs / result visibility | YES | NO | NO | NO | NO | SPECIFIED | 1C | IvoryOS UX |
 | SimulationRobotBackend | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 2 | PyLabRobot pattern |
 | RealRobotBackend | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 2 | V1 behavior reference |
 | Spin coater | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 4 | V1 incomplete reference |
@@ -43,5 +45,5 @@ Phase 0 uses `YES`/`NO` only to report evidence, not readiness.
 | OtO spectrometer | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 8 | V1 placeholder only |
 | Experiment/sample provenance | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 9 | N-AutoLab |
 | Closed-loop optimization | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 10 | Future evaluation |
-| Project structure/import | YES | N/A | N/A | N/A | YES | SPECIFIED | 0 | N-AutoLab |
-| Windows Phase 0 launcher | YES | N/A | DISABLED | Console status only | Manual check | SPECIFIED | 0 | N-AutoLab |
+| Architecture dependency guards | YES | N/A | N/A | N/A | YES | IMPLEMENTED | 1A | N-AutoLab |
+| Windows Phase 1A launcher | YES | N/A | DISABLED | Console status only | Manual check | IMPLEMENTED | 1A | N-AutoLab |

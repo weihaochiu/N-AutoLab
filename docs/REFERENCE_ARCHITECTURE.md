@@ -130,6 +130,22 @@ The inspected revision currently exposes `pylabrobot.machines` as a deprecated r
 | Simulation/visual state | PyLabRobot | IvoryOS UX | No-hardware development with truthful simulated state and operator visibility. |
 | Hardware safety/migration | N-AutoProv V1 | N-AutoLab contract | Study and selectively rewrite validated behavior; do not inherit V1 architecture. |
 
+## Phase 1A Architecture Realization
+
+Phase 1A turns the previously recorded concepts into original N-AutoLab code:
+
+| N-AutoLab implementation | Reference concept | Phase 1A boundary |
+| --- | --- | --- |
+| `Sample`, `Station`, `Device` | PyLabRobot resource/device separation | General-purpose pure Python data and invariants; no PyLabRobot dependency or copied taxonomy. |
+| `SampleRegistry`, `StationRegistry`, `DeviceRegistry` | Orca registry/lookup concept | Small owned in-memory registries with unique ids; no Orca source, scheduling, or AGPL implementation. |
+| `LabState` atomic placement | Resource orchestration concepts | Original canonical state API preserving sample/station agreement; no workflow execution or transport. |
+| `Action`, `Recipe`, `RecipeStep` | Orca definition/runtime separation | Declarations only; no executor, event system, or device calls. |
+| Serialized `to_dict` views | PyLabRobot serialization concept | Simple explicit domain views; no class discovery or third-party serializer. |
+| Future GUI-facing state | IvoryOS visibility UX | Models expose truthful states, but Phase 1A adds no GUI or web technology. |
+
+The new runtime dependency is only PyYAML for the portable demo configuration;
+none of the reference projects is installed as a dependency.
+
 ## License Boundary
 
 Architecture ideas and publicly documented behavior were studied. Implementations will be original N-AutoLab code unless a later dependency or source reuse decision records license compatibility, attribution, distribution obligations, and approval. Orca's AGPL-3.0-only implementation is specifically excluded from copying.

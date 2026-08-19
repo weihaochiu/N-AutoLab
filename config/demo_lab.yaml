@@ -1,0 +1,74 @@
+schema_version: 1
+lab:
+  id: demo_lab
+  display_name: N-AutoLab Demo Laboratory
+
+devices:
+  - id: robot
+    display_name: Demo Transport Robot
+    device_type: robot
+    implementation_state: NOT_IMPLEMENTED
+    connection_state: DISCONNECTED
+    capabilities: [move_sample]
+  - id: hotplate_01
+    display_name: Demo Hot Plate
+    device_type: hot_plate
+    implementation_state: NOT_IMPLEMENTED
+    connection_state: DISCONNECTED
+    capabilities: [heat]
+  - id: spin_coater_01
+    display_name: Demo Spin Coater
+    device_type: spin_coater
+    implementation_state: NOT_IMPLEMENTED
+    connection_state: DISCONNECTED
+    capabilities: [spin]
+  - id: spectrometer_01
+    display_name: Demo Spectrometer
+    device_type: spectrometer
+    implementation_state: NOT_IMPLEMENTED
+    connection_state: DISCONNECTED
+    capabilities: [acquire_spectrum]
+  - id: d405_01
+    display_name: Demo D405 Camera
+    device_type: camera
+    implementation_state: NOT_IMPLEMENTED
+    connection_state: DISCONNECTED
+    capabilities: [capture_image, vision_locate]
+
+stations:
+  - id: storage_s1
+    display_name: Storage S1
+    station_type: storage
+    capacity: 1
+    pose_reference: storage_s1_pose
+    capabilities: [store_sample]
+  - id: hotplate
+    display_name: Hot Plate Station
+    station_type: heating
+    capacity: 1
+    pose_reference: hotplate_pose
+    capabilities: [heat]
+    device_id: hotplate_01
+  - id: spin_coater
+    display_name: Spin Coater Station
+    station_type: coating
+    capacity: 1
+    pose_reference: spin_coater_pose
+    capabilities: [spin]
+    device_id: spin_coater_01
+  - id: spectrometer
+    display_name: Spectrometer Station
+    station_type: measurement
+    capacity: 1
+    pose_reference: spectrometer_pose
+    capabilities: [acquire_spectrum]
+    device_id: spectrometer_01
+
+samples:
+  - id: sample_001
+    name: Demo Sample
+    sample_type: substrate
+    status: READY
+    initial_location: storage_s1
+    metadata:
+      purpose: phase_1a_demo
