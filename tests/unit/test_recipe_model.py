@@ -2,7 +2,7 @@
 
 import pytest
 
-from nautolab.core import Action, InvalidRecipeError, Recipe, RecipeStep
+from nautolab.core import Action, InvalidBooleanError, InvalidRecipeError, Recipe, RecipeStep
 
 
 def wait_step(step_id: str, order: int) -> RecipeStep:
@@ -45,3 +45,14 @@ def test_empty_recipe_preserves_metadata() -> None:
     recipe = Recipe(id="empty_recipe", name="Empty", metadata={"owner": "test"})
     assert recipe.steps == ()
     assert recipe.to_dict()["metadata"] == {"owner": "test"}
+
+
+@pytest.mark.parametrize("enabled", ["false", 0, 1, None])
+def test_recipe_step_enabled_requires_strict_boolean(enabled: object) -> None:
+    with pytest.raises(InvalidBooleanError):
+        RecipeStep(
+            step_id="strict_bool",
+            order=0,
+            action=Action(id="wait_strict_bool", action_type="WAIT"),
+            enabled=enabled,  # type: ignore[arg-type]
+        )

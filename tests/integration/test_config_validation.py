@@ -9,7 +9,9 @@ from nautolab.core import (
     ConfigurationError,
     DuplicateResourceError,
     DuplicateSlotIndexError,
+    InvalidBooleanError,
     InvalidCapacityError,
+    InvalidIdentifierError,
     ResourceNotFoundError,
 )
 from nautolab.resources import load_lab_config
@@ -68,12 +70,26 @@ def test_duplicate_slot_index_is_rejected(tmp_path: Path) -> None:
         load_lab_config(write_config(tmp_path, data))
 
 
-def test_missing_slot_parent_is_rejected(tmp_path: Path) -> None:
+def test_nested_slot_cannot_declare_a_different_parent(tmp_path: Path) -> None:
     data = base_config()
     slot = data["stations"][0]["slots"][0]  # type: ignore[index]
     slot["parent_station_id"] = "storage_99"
     slot["id"] = "storage_99.slot_01"
-    with pytest.raises(ResourceNotFoundError, match="station"):
+    with pytest.raises(ConfigurationError, match="nested under station 'storage_01'"):
+        load_lab_config(write_config(tmp_path, data))
+
+
+def test_nested_slot_may_repeat_its_actual_parent(tmp_path: Path) -> None:
+    data = base_config()
+    data["stations"][0]["slots"][0]["parent_station_id"] = "storage_01"  # type: ignore[index]
+    state = load_lab_config(write_config(tmp_path, data))
+    assert state.slots.get("storage_01.slot_01").parent_station_id == "storage_01"
+
+
+def test_nested_slot_id_must_belong_to_its_outer_station(tmp_path: Path) -> None:
+    data = base_config()
+    data["stations"][0]["slots"][0]["id"] = "storage_99.slot_01"  # type: ignore[index]
+    with pytest.raises(InvalidIdentifierError, match="does not belong"):
         load_lab_config(write_config(tmp_path, data))
 
 
@@ -117,6 +133,22 @@ def test_disabled_parent_or_slot_loads_when_unoccupied(
     state = load_lab_config(write_config(tmp_path, data))
     assert state.stations.get("storage_01").enabled is station_enabled
     assert state.slots.get("storage_01.slot_01").enabled is slot_enabled
+
+
+@pytest.mark.parametrize("enabled", ["true", "false", 1, 0, None, []])
+def test_station_enabled_requires_yaml_boolean(tmp_path: Path, enabled: object) -> None:
+    data = base_config()
+    data["stations"][0]["enabled"] = enabled  # type: ignore[index]
+    with pytest.raises(InvalidBooleanError, match="Boolean true/false"):
+        load_lab_config(write_config(tmp_path, data))
+
+
+@pytest.mark.parametrize("enabled", ["true", "false", 1, 0, None, []])
+def test_slot_enabled_requires_yaml_boolean(tmp_path: Path, enabled: object) -> None:
+    data = base_config()
+    data["stations"][0]["slots"][0]["enabled"] = enabled  # type: ignore[index]
+    with pytest.raises(InvalidBooleanError, match="Boolean true/false"):
+        load_lab_config(write_config(tmp_path, data))
 
 
 def test_missing_station_device_reference_is_rejected(tmp_path: Path) -> None:

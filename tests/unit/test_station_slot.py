@@ -4,6 +4,7 @@ import pytest
 
 from nautolab.core import (
     InvalidCapacityError,
+    InvalidBooleanError,
     InvalidIdentifierError,
     StationOccupiedError,
     StationSlot,
@@ -47,6 +48,12 @@ def test_slot_occupancy_tracks_exact_samples_and_is_read_only() -> None:
 
 def test_slot_enabled_state_is_explicit() -> None:
     assert make_slot(enabled=False).enabled is False
+
+
+@pytest.mark.parametrize("enabled", ["true", "false", 1, 0, None, []])
+def test_slot_enabled_requires_strict_boolean(enabled: object) -> None:
+    with pytest.raises(InvalidBooleanError, match="enabled"):
+        make_slot(enabled=enabled)
 
 
 @pytest.mark.parametrize("capacity", [-1, 1.5, True, "1"])

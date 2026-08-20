@@ -2,7 +2,7 @@
 
 import pytest
 
-from nautolab.core import InvalidIdentifierError, Station
+from nautolab.core import InvalidBooleanError, InvalidIdentifierError, Station
 
 
 def make_station(**overrides: object) -> Station:
@@ -32,6 +32,12 @@ def test_station_has_optional_service_pose_not_sample_occupancy() -> None:
 
 def test_station_enabled_state_is_explicit() -> None:
     assert make_station(enabled=False).enabled is False
+
+
+@pytest.mark.parametrize("enabled", ["true", "false", 1, 0, None, []])
+def test_station_enabled_requires_strict_boolean(enabled: object) -> None:
+    with pytest.raises(InvalidBooleanError, match="enabled"):
+        make_station(enabled=enabled)
 
 
 def test_station_is_distinct_from_primary_device() -> None:
