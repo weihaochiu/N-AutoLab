@@ -50,6 +50,12 @@ Before every push:
 `core.hooksPath=.githooks`. Every normal push first archives `HEAD` with
 `git archive`, so dirty or ignored working-tree data cannot enter the ZIP.
 
+The hook reads Git's `<local ref> <local sha> <remote ref> <remote sha>` stdin
+records and archives every unique non-deletion local SHA. This covers non-HEAD
+branches, tags, and multi-ref pushes; deletion records require no source
+archive. HEAD is available only to the explicit manual command path and is
+never a pre-push fallback.
+
 The script verifies ZIP CRC and the complete tracked-file list before publishing
 the archive, then retains the newest ten `BACKUP/N-AutoLab_*.zip` files. Cleanup
 only begins after the new archive passes verification. Archive, verification,

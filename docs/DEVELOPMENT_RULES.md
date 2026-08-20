@@ -119,6 +119,24 @@ private Sample/Slot state or own registries, resolution, safety, transport, or
 workflow logic. Simulation work runs outside the Qt event thread and reports
 back through queued signals/events.
 
+## Rule 20 — Chain MOVE source from resolved state
+
+A Recipe MOVE source may be AUTO (`None`). Planning reads that Sample's current
+resolved exact location independently of other Samples. An explicit source is
+an assertion, not a routing instruction. Workflow sources are always exact.
+
+## Rule 21 — Separate test time from operator playback
+
+Tests and non-GUI application calls default to Instant. Operator-selected
+playback scales virtual Recipe duration in the simulation worker only. Waiting
+must be interruptible; never sleep in the Qt main thread.
+
+## Rule 22 — Back up Git's pushed objects
+
+The pre-push gate parses all stdin ref updates and archives each unique,
+non-deletion local SHA. Pre-push execution must never substitute HEAD for the
+SHA Git reports.
+
 ## Python and Project Style
 
 - Python 3.11 or newer.

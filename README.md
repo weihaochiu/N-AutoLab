@@ -75,6 +75,12 @@ build a typed Workflow, pass aggregate preflight, and execute logical movement
 with a `SIMULATED` transporter. The PySide6 interface exposes Dashboard,
 Station Map, Samples, Recipe, Workflow, Devices, and Logs pages.
 
+MOVE steps may use `AUTO` source: planning follows that Sample's current
+resolved exact Slot, so later steps never predict an earlier auto-allocation.
+The GUI offers Instant, 20×, 10×, 5×, and 1× playback; automated execution
+defaults to Instant while visible playback remains interruptible and runs in a
+worker thread.
+
 Demo devices still report `NOT_IMPLEMENTED` and `DISCONNECTED` truthfully.
 No robot, instrument, serial/TCP transport, camera, or vendor library is used.
 

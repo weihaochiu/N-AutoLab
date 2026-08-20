@@ -295,8 +295,15 @@ STATION_TYPE    hotplate             (future auto-station + auto-slot)
 ```
 
 Ambiguous combinations are invalid. This declaration does not perform resource
-resolution; Phase 1B will consume deterministic availability queries and define
-selection policy.
+resolution; Phase 1B consumes deterministic availability queries using the
+documented canonical Station ID and Slot-index selection policy.
+
+`MOVE_SAMPLE.source_slot_id` is optional Recipe intent. `None` means AUTO:
+planning uses the Sample's current resolved location. A supplied source is an
+explicit assertion and fails with `SOURCE_MISMATCH` when it differs. Every
+resolved `WorkflowStep.source_slot_id` is an exact Slot, including when Recipe
+source is AUTO. Destination auto-allocation therefore never requires a later
+Recipe step to predict an earlier Resolver result.
 
 ## 9. Events and Execution Visibility
 
@@ -327,6 +334,14 @@ defined. Workflow, device, safety, error, and log information is visible.
 Workflow development must be possible with no real hardware. Simulation implementations use the same device/transporter abstractions as real backends and report `SIMULATED` explicitly. Simulation must never be an automatic fallback from failed real hardware.
 
 Whenever practical, simulation is implemented and tested before a real backend. The Phase 1 golden path is simulation-only.
+
+Automated simulation defaults to Instant. GUI demonstration may select 20×,
+10×, 5×, or 1× accelerated playback without changing Recipe duration. Playback
+waits occur only in the worker thread and poll abort at short intervals. Pause
+remains a step-boundary request. Preflight requires location readiness only for
+Samples referenced by enabled steps; unrelated unlocated Samples are allowed,
+while any contradictory canonical location/occupancy state remains global and
+fail-closed.
 
 ## 11. Safety and Failure Contract
 

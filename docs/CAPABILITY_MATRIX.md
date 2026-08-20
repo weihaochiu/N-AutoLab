@@ -38,6 +38,7 @@ execution, simulation, GUI availability, or real-hardware readiness.
 | Recipe / RecipeStep declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | N-AutoLab; V1 reference |
 | Multi-station demo config v2 | YES | N/A | DISABLED | Console diagnostic | YES | IMPLEMENTED | 1A.1 | N-AutoLab |
 | Resource Resolver | YES | YES | N/A | Recipe | YES | IMPLEMENTED | 1B | N-AutoLab + Orca concepts |
+| Dynamic AUTO MOVE source chaining | YES | YES | N/A | Recipe | YES | IMPLEMENTED | 1B Final | N-AutoLab |
 | StationMap | YES | NO | NO | NO | NO | SPECIFIED | 1B | PyLabRobot + Orca; V1 data reference |
 | TransportGraph | YES | NO | NO | NO | NO | SPECIFIED | 1B | Orca SystemMap concept |
 | Transporter pattern | YES | YES | NO | Workflow | YES | SIMULATED | 1B | Orca |
@@ -45,10 +46,12 @@ execution, simulation, GUI availability, or real-hardware readiness.
 | WorkflowExecutor | YES | YES | NO | YES | YES | SIMULATED | 1B | Orca concept |
 | Event system | YES | YES | N/A | Logs | YES | IMPLEMENTED | 1B | Orca concept |
 | Preflight | YES | YES | NO | Recipe errors | YES | IMPLEMENTED | 1B | N-AutoLab + V1 safety behavior |
+| Relevant-Sample Preflight scoping | YES | YES | NO | Recipe errors | YES | IMPLEMENTED | 1B Final | N-AutoLab |
 | SimulationTransporter | YES | YES | N/A | Station Map | YES | SIMULATED | 1B | Orca + N-AutoLab |
 | Workflow UX | YES | YES | N/A | YES | YES | IMPLEMENTED | 1C | IvoryOS UX |
 | Devices Page / direct control UX | YES | State only | NO | YES | YES | IMPLEMENTED | 1C | IvoryOS UX |
 | GUI | YES | YES | NO | YES | YES | IMPLEMENTED | 1C | IvoryOS UX + N-AutoLab |
+| Accelerated operator playback | YES | Instant/1×–20× | NO | YES | YES | IMPLEMENTED | 1C Final | N-AutoLab |
 | SimulationRobotBackend | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 2 | PyLabRobot pattern |
 | RealRobotBackend | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 2 | V1 behavior reference |
 | Spin coater hardware | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 4 | V1 incomplete reference |

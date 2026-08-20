@@ -84,6 +84,11 @@ typed observable events, aggregate preflight, accelerated logical transport,
 boundary pause/resume/abort semantics, a four-move golden path, application
 read models, and a seven-page PySide6 GUI. Phase 2 remains unstarted.
 
+Final integration makes Recipe MOVE sources dynamically follow per-Sample
+resolved locations, scopes unlocated readiness to workflow-relevant Samples,
+backs up actual pre-push local SHAs, and provides operator-visible accelerated
+playback while preserving Instant tests.
+
 ## Phase 2 — Robot Integration
 
 References:

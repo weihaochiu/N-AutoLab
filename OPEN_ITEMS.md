@@ -231,6 +231,8 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Acceptance Criteria:** Pending/running/completed/failed/paused/aborted transitions are deterministic and visible.
 - **Tests:** Unit and integration tests for success, failure, pause/resume, abort, cleanup, and resource conflicts.
 - **Notes:** Phase 1 execution is simulation-only.
+- **Final integration:** AUTO MOVE sources resolve from per-Sample planning
+  locations; accelerated playback supports boundary pause and interruptible abort.
 
 ### NAL-WF-003 — Implement Event system
 
@@ -253,6 +255,8 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Acceptance Criteria:** Recipe remains immutable execution input; workflow/step ids, resolved references, lifecycle, and errors are explicit.
 - **Tests:** Resolution, invalid reference, lifecycle, serialization, and no-side-effect tests.
 - **Notes:** Must precede `WorkflowExecutor`; do not put execution methods on `Recipe`.
+- **Final integration:** Recipe source may be AUTO; resolved Workflow source is
+  always an exact Slot and stable for the run.
 
 ### NAL-WF-005 — Implement Resource Resolver
 
@@ -264,6 +268,8 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Acceptance Criteria:** Supports exact Slot, exact Station/auto Slot, and Station type/auto Station+Slot; policy and failures are deterministic and side-effect-free before reservation/execution.
 - **Tests:** Exact resolution, ordering, full/disabled resources, missing references, ambiguity rejection, and no-side-effect tests.
 - **Notes:** Phase 1A.1 implements only intent and sorted queries, not this resolver.
+- **Final integration:** Repeated Station-type destinations chain without
+  predicting prior resolved Slots.
 
 ## Simulation
 
@@ -334,6 +340,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Acceptance Criteria:** Current, pending, running, completed, failed, paused, and aborted states are visible; controls reflect actual support.
 - **Tests:** Event-to-view tests and control-state GUI tests.
 - **Notes:** Reset semantics must be defined before the button is enabled.
+- **Final integration:** GUI exposes Instant/20×/10×/5×/1× playback and AUTO source.
 
 ## Robot
 
@@ -498,4 +505,5 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Dependencies:** Stable repository workflow and user-selected backup location
 - **Acceptance Criteria:** Exact-commit verification, exclusions, restore test, hook installation, failure behavior, and remote SHA verification are documented and tested.
 - **Tests:** Isolated temporary-repository tests for success, exclusion, failure, and restore.
-- **Notes:** Phase 0 intentionally provides specification only.
+- **Notes:** Implemented gate parses actual pushed local SHAs from stdin,
+  deduplicates multi-ref updates, skips deletions, and never assumes HEAD.
