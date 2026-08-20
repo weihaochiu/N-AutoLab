@@ -13,12 +13,19 @@ def main() -> None:
     state = load_lab_config(repository_root / "config" / "demo_lab.yaml")
 
     print("N-AutoLab")
-    print("Phase 1A -- Core Domain + Registry + Demo Lab Configuration")
+    print("Phase 1A.1 -- Station Instance + Slot Resource Hierarchy")
     print()
     print("Stations:")
     for station in state.stations.list_all():
-        occupants = ", ".join(station.occupant_ids) or "empty"
-        print(f"  {station.id}: {occupants} ({station.occupancy}/{station.capacity})")
+        print(
+            f"{station.display_name} [{station.id}] "
+            f"({state.station_occupancy(station.id)}/"
+            f"{state.station_total_capacity(station.id)})"
+        )
+        for slot in state.slots.list_by_station(station.id):
+            occupants = ", ".join(slot.occupant_ids) or "EMPTY"
+            print(f"  {slot.display_name:<10} {occupants}")
+        print()
     print("Devices:")
     for device in state.devices.list_all():
         print(
@@ -27,7 +34,7 @@ def main() -> None:
         )
     print("Samples:")
     for sample in state.samples.list_all():
-        print(f"  {sample.id}: location={sample.current_location}, status={sample.status.value}")
+        print(f"  {sample.id}: slot={sample.current_location}, status={sample.status.value}")
     print()
     print("Runtime GUI: Not implemented")
     print("Hardware access: Disabled")
