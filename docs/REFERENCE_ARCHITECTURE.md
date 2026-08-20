@@ -143,8 +143,9 @@ Phase 1A turns the previously recorded concepts into original N-AutoLab code:
 | Serialized `to_dict` views | PyLabRobot serialization concept | Simple explicit domain views; no class discovery or third-party serializer. |
 | Future GUI-facing state | IvoryOS visibility UX | Models expose truthful states, but Phase 1A adds no GUI or web technology. |
 
-The new runtime dependency is only PyYAML for the portable demo configuration;
-none of the reference projects is installed as a dependency.
+Runtime dependencies are PyYAML for portable configuration and PySide6 for the
+desktop presentation layer; none of the reference projects is installed as a
+dependency.
 
 ## Phase 1A.1 Resource Hierarchy Realization
 
@@ -159,15 +160,30 @@ from either reference project:
 | Multi-instance Station queries | Orca SystemMap/resource availability concepts | Deterministically list Stations by type and available Slots by Station/type; no graph, scheduler, reservation, or Orca implementation. |
 | Slot-level canonical state | N-AutoLab ADRs 0006–0007 | Store Sample location at exact Slot and derive parent Station aggregates without duplicate occupancy state. |
 
-The planned Phase 1B Resource Resolver will distinguish exact Slot, exact
-Station/auto Slot, and Station type/auto Station+Slot intent. Phase 1A.1 defines
-only the serializable intent and sorted read queries.
+The Phase 1B Resource Resolver distinguishes exact Slot, exact Station/auto
+Slot, and Station type/auto Station+Slot intent. It is original N-AutoLab code
+over the existing registries and deterministic queries.
 
 Phase 1A.1 hardening adds N-AutoLab-owned invariants around relationship-safe
 deletion, strict Boolean enable fields, nested configuration ownership,
 injected registry identity, and rollback after unexpected partial mutations.
 These safeguards are original domain rules; they do not add or copy behavior
 from the reference projects and do not change the reference allocation above.
+
+## Phase 1B/1C Runtime and GUI Realization
+
+| N-AutoLab implementation | Reference concept | N-AutoLab decision |
+| --- | --- | --- |
+| `ResourceResolver` | Orca availability/orchestration concept | Pure deterministic selection over canonical Stations/Slots; no Orca code, locking, or scheduler. |
+| Resolved `Workflow` + executor | Orca definition/runtime separation | Typed original models with explicit lifecycle, errors, safe boundaries, and stable per-run IDs. |
+| `EventBus` | Orca observable events | Observer-only delivery; subscriber errors are captured and cannot own domain state. |
+| `SimulationTransporter` | Orca transporter role + PyLabRobot device-free development | Logical Slot-to-Slot moves through `LabState`; no joints, SDK, coordinates, or real wait. |
+| PySide6 pages | IvoryOS visibility concepts | Original desktop widgets over application read models; no web templates or copied UI code. |
+
+The canonical Recipe is independent of Table, Step Builder, Flow, and Timeline
+representations. Qt owns no registry, resource allocation, workflow, safety, or
+hardware state. Phase 1 completes the simulation UI without implementing any
+Phase 2 robot backend.
 
 ## License Boundary
 

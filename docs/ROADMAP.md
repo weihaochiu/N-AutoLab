@@ -42,7 +42,7 @@ not authorize work in the next.
 - Perform no resource resolution, workflow execution, scheduling, simulation,
   GUI, or hardware access.
 
-### Phase 1B — Resource Resolution + Workflow + Simulation
+### Phase 1B — Resource Resolution + Workflow + Simulation (Complete)
 
 - Resolve exactly one of: exact Slot, exact Station/auto Slot, or Station
   type/auto Station+Slot using explicit deterministic policy.
@@ -60,7 +60,7 @@ Storage:S1
 → Storage:S1
 ```
 
-### Phase 1C — Minimal Desktop Qt Visibility
+### Phase 1C — Minimal Desktop Qt Visibility (Complete)
 
 Provide application-backed desktop views for:
 
@@ -78,6 +78,11 @@ Widgets display state and issue application commands; they do not own registry,
 workflow, simulation, or safety logic.
 
 No real hardware is authorized anywhere in Phase 1.
+
+Phase 1 acceptance is implemented with deterministic exact-Slot resolution,
+typed observable events, aggregate preflight, accelerated logical transport,
+boundary pause/resume/abort semantics, a four-move golden path, application
+read models, and a seven-page PySide6 GUI. Phase 2 remains unstarted.
 
 ## Phase 2 — Robot Integration
 

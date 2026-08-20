@@ -104,6 +104,21 @@ A Slot nested under a Station belongs to that outer Station. An explicit
 but must never redirect ownership; canonical Slot ID validation remains the
 single source for ID/parent/index agreement.
 
+## Rule 18 — Keep Recipe representation-independent
+
+`Recipe` and `RecipeStep` are canonical. The Phase 1 table editor is only a
+presentation adapter. Row/column position, node coordinates, and background
+color must never become execution identity, action meaning, order, or domain
+conditions. A future Step Builder, Flow View, or Timeline View must use the same
+Recipe engine.
+
+## Rule 19 — Resolve and execute through the application boundary
+
+GUI widgets consume application read models and commands. They do not read
+private Sample/Slot state or own registries, resolution, safety, transport, or
+workflow logic. Simulation work runs outside the Qt event thread and reports
+back through queued signals/events.
+
 ## Python and Project Style
 
 - Python 3.11 or newer.

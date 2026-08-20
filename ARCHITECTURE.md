@@ -1,6 +1,6 @@
 # N-AutoLab Architecture Contract
 
-Status: Accepted; Phase 1A.1 implementation recorded
+Status: Accepted; Phase 1 implementation recorded
 Scope: Mandatory direction for all implementation
 
 ## 1. Platform Boundary
@@ -300,9 +300,12 @@ selection policy.
 
 ## 9. Events and Execution Visibility
 
-A future `EventBus` or `EventDispatcher` decouples workflow/device status publication from GUI presentation. It is not a hidden path for bypassing application or safety policy.
+`EventBus` decouples workflow status publication from GUI presentation. Domain
+state changes are authoritative; subscriber exceptions are captured as
+observable errors and never roll back or corrupt a completed domain transition.
+Events are not a hidden path for bypassing application or safety policy.
 
-The runtime model must eventually expose:
+The Phase 1 runtime model exposes:
 
 ```text
 Current workflow
@@ -315,7 +318,9 @@ Paused
 Aborted
 ```
 
-Planned controls are `Validate`, `Run`, `Pause`, `Resume`, `Abort`, and `Reset`. Workflow, device, safety, error, log, and result information must be visible to operators.
+Implemented controls are `Validate`, `Run Simulation`, boundary-safe `Pause`,
+`Resume`, and `Abort`. `Reset` remains disabled because its semantics are not
+defined. Workflow, device, safety, error, and log information is visible.
 
 ## 10. Simulation Contract
 
@@ -325,7 +330,7 @@ Whenever practical, simulation is implemented and tested before a real backend. 
 
 ## 11. Safety and Failure Contract
 
-- Phase 1A.1 performs zero hardware access.
+- Phase 1 performs zero hardware access.
 - Real commands require explicit real backends, capability checks, connection checks, and preflight.
 - Hardware and transport failures propagate as visible errors; they are not rewritten as success.
 - Abort and shutdown semantics must be device-aware and fail closed.
@@ -336,7 +341,11 @@ Whenever practical, simulation is implemented and tested before a real backend. 
 
 Major changes must update this document, [docs/REFERENCE_ARCHITECTURE.md](docs/REFERENCE_ARCHITECTURE.md), the relevant ADR, [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md), and [OPEN_ITEMS.md](OPEN_ITEMS.md). Third-party implementation cannot be copied without explicit license review.
 
-Phase 1A.1 adds only Station/Slot hierarchy, slot-level canonical state,
-deterministic availability queries, declarative destination intent, and portable
-demo configuration. Resource resolution, workflow runtime, events, simulation
-transport, scheduling, GUI, and all hardware access remain deferred.
+Phase 1 adds deterministic side-effect-free resource resolution, separate
+Recipe and resolved Workflow models, typed observer events, aggregate
+simulation preflight, atomic logical transport through `LabState`, workflow
+lifecycle execution, application read models, and a PySide6 operator GUI.
+Reservation frameworks, production scheduling, real device backends, and all
+hardware access remain deferred. The table editor is a Phase 1 representation,
+not the canonical Recipe model; future step/flow/timeline views adapt the same
+domain model without storing row, column, color, or node position as semantics.

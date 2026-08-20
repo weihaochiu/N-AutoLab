@@ -37,18 +37,18 @@ execution, simulation, GUI availability, or real-hardware readiness.
 | Destination intent declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 | N-AutoLab |
 | Recipe / RecipeStep declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | N-AutoLab; V1 reference |
 | Multi-station demo config v2 | YES | N/A | DISABLED | Console diagnostic | YES | IMPLEMENTED | 1A.1 | N-AutoLab |
-| Resource Resolver | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1B | N-AutoLab + Orca concepts |
+| Resource Resolver | YES | YES | N/A | Recipe | YES | IMPLEMENTED | 1B | N-AutoLab + Orca concepts |
 | StationMap | YES | NO | NO | NO | NO | SPECIFIED | 1B | PyLabRobot + Orca; V1 data reference |
 | TransportGraph | YES | NO | NO | NO | NO | SPECIFIED | 1B | Orca SystemMap concept |
-| Transporter pattern | YES | NO | NO | NO | NO | SPECIFIED | 1B | Orca |
-| Workflow model | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1B | Orca concept |
-| WorkflowExecutor | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 1B | Orca concept |
-| Event system | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1B | Orca concept |
-| Preflight | YES | NO | NO | NO | NO | SPECIFIED | 1B | N-AutoLab + V1 safety behavior |
-| SimulationTransporter | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 1B | Orca + N-AutoLab |
-| Workflow UX | YES | NO | N/A | NO | NO | SPECIFIED | 1C | IvoryOS UX |
-| Devices Page / direct control UX | YES | NO | NO | NO | NO | SPECIFIED | 1C | IvoryOS UX |
-| GUI | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 1C | IvoryOS UX + N-AutoLab |
+| Transporter pattern | YES | YES | NO | Workflow | YES | SIMULATED | 1B | Orca |
+| Workflow model | YES | YES | N/A | YES | YES | IMPLEMENTED | 1B | Orca concept |
+| WorkflowExecutor | YES | YES | NO | YES | YES | SIMULATED | 1B | Orca concept |
+| Event system | YES | YES | N/A | Logs | YES | IMPLEMENTED | 1B | Orca concept |
+| Preflight | YES | YES | NO | Recipe errors | YES | IMPLEMENTED | 1B | N-AutoLab + V1 safety behavior |
+| SimulationTransporter | YES | YES | N/A | Station Map | YES | SIMULATED | 1B | Orca + N-AutoLab |
+| Workflow UX | YES | YES | N/A | YES | YES | IMPLEMENTED | 1C | IvoryOS UX |
+| Devices Page / direct control UX | YES | State only | NO | YES | YES | IMPLEMENTED | 1C | IvoryOS UX |
+| GUI | YES | YES | NO | YES | YES | IMPLEMENTED | 1C | IvoryOS UX + N-AutoLab |
 | SimulationRobotBackend | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 2 | PyLabRobot pattern |
 | RealRobotBackend | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 2 | V1 behavior reference |
 | Spin coater hardware | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 4 | V1 incomplete reference |
@@ -59,4 +59,4 @@ execution, simulation, GUI availability, or real-hardware readiness.
 | Experiment/sample provenance | YES | NO | N/A | NO | NO | NOT_IMPLEMENTED | 9 | N-AutoLab |
 | Closed-loop optimization | YES | NO | NO | NO | NO | NOT_IMPLEMENTED | 10 | Future evaluation |
 | Architecture dependency guards | YES | N/A | N/A | N/A | YES | IMPLEMENTED | 1A.1 | N-AutoLab |
-| Windows Phase 1A.1 launcher | YES | N/A | DISABLED | Console status only | Manual check | IMPLEMENTED | 1A.1 | N-AutoLab |
+| Windows Phase 1 launcher | YES | YES | DISABLED | PySide6 desktop | YES | IMPLEMENTED | 1C | N-AutoLab |

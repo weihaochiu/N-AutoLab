@@ -223,7 +223,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-WF-002 — Implement WorkflowExecutor
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Execute validated simulation workflows with explicit lifecycle and action status.
 - **Reference:** Orca workflow/executor concepts
@@ -234,7 +234,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-WF-003 — Implement Event system
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Publish typed domain/application events without coupling executor, devices, and GUI.
 - **Reference:** Orca EventBus concept
@@ -245,7 +245,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-WF-004 — Define resolved Workflow and step state model
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Resolve recipe intent into an execution-oriented model with explicit lifecycle states.
 - **Reference:** Orca definition/runtime separation; N-AutoLab architecture contract
@@ -256,7 +256,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-WF-005 — Implement Resource Resolver
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Resolve declarative destination intent into one exact available Slot.
 - **Reference:** ADR 0007; Orca resource availability concepts
@@ -269,7 +269,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-SIM-001 — Implement SimulationTransporter
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Move samples across the simulation station graph with truthful state updates.
 - **Reference:** Orca transporter concept; PyLabRobot device-free development
@@ -280,7 +280,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-SIM-002 — Validate Phase 1 simulation golden path
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Execute Storage:S1 → HotPlate → SpinCoater → HotPlate → Storage:S1 with no hardware.
 - **Reference:** `docs/ROADMAP.md`
@@ -293,7 +293,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-GUI-001 — Implement V2 Dashboard
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1C
 - **Goal:** Provide a minimal Qt overview of system, workflow, device, sample, and safety state.
 - **Reference:** IvoryOS visibility UX; ADR 0004
@@ -304,7 +304,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-GUI-002 — Implement Station Map GUI
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1C
 - **Goal:** Visualize and edit the simulation station map through application services.
 - **Reference:** PyLabRobot visual resource state; IvoryOS visibility UX
@@ -315,7 +315,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-GUI-003 — Implement Recipe Table Editor
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1C
 - **Goal:** Provide the first recipe editor over the shared recipe model.
 - **Reference:** IvoryOS builder UX; `ARCHITECTURE.md` §8
@@ -326,7 +326,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-GUI-004 — Implement Workflow Monitor
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1C
 - **Goal:** Show workflow/step state, logs, errors, and safe runtime controls.
 - **Reference:** IvoryOS execution UX
@@ -426,7 +426,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-SAFE-001 — Implement Preflight validation
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1B
 - **Goal:** Validate workflow, capability, station, occupancy, implementation state, and connection requirements before execution.
 - **Reference:** N-AutoLab safety contract; V1 preflight lessons
@@ -491,7 +491,7 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 ### NAL-INFRA-001 — Implement pre-push backup and safety gate
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Phase:** 1 or later
 - **Goal:** Create a small, tested gate that backs up the exact commit and prevents accidental push of unsafe/local artifacts.
 - **Reference:** `docs/BACKUP_STRATEGY.md`; V1 backup behavior as a study reference

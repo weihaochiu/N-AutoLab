@@ -2,7 +2,7 @@
 
 Modular Laboratory Automation and Experiment Orchestration Platform
 
-**Current Development Stage:** Phase 1A.1 — Station Instance + Slot Resource Hierarchy
+**Current Development Stage:** Phase 1 Complete — Core + Simulation Qt GUI
 
 **Hardware Execution:** Not implemented / disabled
 
@@ -69,15 +69,14 @@ All Python code uses the `nautolab` package and a `src` layout.
 
 ## Development Status
 
-Phase 1A.1 extends the general-purpose models with explicit Station instances and
-sample-holding `StationSlot` resources. Sample location is always one exact Slot;
-parent Station occupancy/capacity are derived from child Slots. The schema v2
-demo includes two independent Hot Plates, variable slot counts, four Samples,
-and deterministic availability queries.
+Phase 1 provides the full no-hardware path: load the schema-v2 demo laboratory,
+edit and validate a canonical Recipe, resolve exact Slot/Station/type intent,
+build a typed Workflow, pass aggregate preflight, and execute logical movement
+with a `SIMULATED` transporter. The PySide6 interface exposes Dashboard,
+Station Map, Samples, Recipe, Workflow, Devices, and Logs pages.
 
-It deliberately does **not** implement workflow execution, event delivery,
-simulation transport, hardware access, a real station map, recipe editors, or a
-GUI. Demo devices report `NOT_IMPLEMENTED` and `DISCONNECTED` truthfully.
+Demo devices still report `NOT_IMPLEMENTED` and `DISCONNECTED` truthfully.
+No robot, instrument, serial/TCP transport, camera, or vendor library is used.
 
 ## Setup
 
@@ -103,8 +102,8 @@ py -3.11 -m venv .venv
 run_windows.bat
 ```
 
-The launcher prints Phase 1A.1 capability status only. It does not open a GUI or
-contact hardware.
+The launcher opens the simulation-only N-AutoLab Qt GUI. It never contacts
+hardware.
 
 To inspect the in-memory demo lab:
 
@@ -112,8 +111,8 @@ To inspect the in-memory demo lab:
 .venv\Scripts\python.exe scripts\show_demo_lab_state.py
 ```
 
-This diagnostic loads configuration and prints state; it does not execute a
-workflow or move a physical or simulated sample.
+This diagnostic loads configuration and prints canonical state without moving
+a physical or simulated sample.
 
 ## Tests
 
@@ -125,17 +124,16 @@ After setup:
 
 ## Roadmap
 
-Phase 1A.1 is complete at the repository level. Phase 1B is planned to introduce
-resource resolution, resolved workflow state, events, preflight,
-`SimulationTransporter`, the workflow executor, and a simulation-only golden
-path. Phase 1C adds minimal
-desktop visibility. Later phases add hardware one family at a time. See
+Phase 1A/1B/1C are complete at the repository level. The deterministic golden
+path is Storage → Hot Plate → Spin Coater → Hot Plate → Storage, and multi-slot
+tests prove three samples may occupy one Hot Plate concurrently. Phase 2 robot
+integration has not started. Later phases add hardware one family at a time. See
 [docs/ROADMAP.md](docs/ROADMAP.md) and
 [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md).
 
 ## Safety
 
-Phase 1A.1 has zero hardware access. No robot, gripper, serial port, TCP device,
+Phase 1 has zero hardware access. No robot, gripper, serial port, TCP device,
 vendor DLL, camera, or spectrometer is opened. Future real hardware must use
 explicit backends, fail closed, expose truthful implementation and connection
 states, pass preflight, and have tests plus operator-visible status.
