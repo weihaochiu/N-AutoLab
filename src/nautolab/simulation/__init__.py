@@ -1,1 +1,5 @@
-"""Explicit simulation implementations; none exist in Phase 0."""
+"""Explicit simulation-only implementations."""
+
+from .transporter import SimulationTransporter
+
+__all__ = ["SimulationTransporter"]

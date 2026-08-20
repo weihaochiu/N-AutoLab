@@ -59,3 +59,19 @@ class InvalidRecipeError(NautolabError):
 
 class ConfigurationError(NautolabError):
     """Raised when a laboratory configuration cannot form valid domain state."""
+
+
+class ResourceResolutionError(NautolabError):
+    """Raised when destination intent cannot resolve to an available exact slot."""
+
+
+class InvalidWorkflowTransitionError(NautolabError):
+    """Raised when workflow lifecycle state would move out of order."""
+
+
+class PreflightError(NautolabError):
+    """Raised when execution is attempted after a failed preflight."""
+
+
+class SimulationTransportError(NautolabError):
+    """Raised when a simulated transfer cannot preserve canonical state."""

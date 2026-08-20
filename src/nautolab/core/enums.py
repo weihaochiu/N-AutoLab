@@ -66,3 +66,28 @@ class AllocationMode(StrEnum):
     EXACT_SLOT = "EXACT_SLOT"
     EXACT_STATION = "EXACT_STATION"
     STATION_TYPE = "STATION_TYPE"
+
+
+class WorkflowStatus(StrEnum):
+    CREATED = "CREATED"
+    VALIDATED = "VALIDATED"
+    READY = "READY"
+    RUNNING = "RUNNING"
+    PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    ABORTED = "ABORTED"
+
+
+class WorkflowStepStatus(StrEnum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+    ABORTED = "ABORTED"
+
+
+class ExecutionMode(StrEnum):
+    SIMULATION = "SIMULATION"
+    REAL = "REAL"

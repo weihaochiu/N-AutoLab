@@ -1,4 +1,4 @@
-"""Architecture guardrails for the Phase 1A.1 scope."""
+"""Architecture guardrails for the completed Phase 1 scope."""
 
 import ast
 from pathlib import Path
@@ -19,7 +19,7 @@ def test_domain_and_resources_do_not_import_gui_or_hardware_libraries() -> None:
         "cv2",
         "pyrealsense",
     )
-    for package_name in ("core", "resources"):
+    for package_name in ("core", "resources", "workflow", "simulation", "safety"):
         for path in (SOURCE_ROOT / package_name).glob("*.py"):
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             imports: list[str] = []
@@ -46,16 +46,12 @@ def test_core_has_no_material_specific_class_names() -> None:
     assert all(name not in core_text for name in forbidden)
 
 
-def test_phase_1a_1_does_not_implement_deferred_runtime_classes() -> None:
-    deferred = (
-        "WorkflowExecutor",
-        "EventBus",
-        "SimulationTransporter",
-        "ResourceResolver",
-        "ReservationManager",
-    )
-    source_text = "\n".join(path.read_text(encoding="utf-8") for path in SOURCE_ROOT.rglob("*.py"))
-    assert all(name not in source_text for name in deferred)
+def test_runtime_layers_do_not_import_gui() -> None:
+    for package_name in ("core", "resources", "workflow", "simulation", "safety", "application"):
+        for path in (SOURCE_ROOT / package_name).glob("*.py"):
+            source = path.read_text(encoding="utf-8")
+            assert "nautolab.gui" not in source, path
+            assert "PySide6" not in source, path
 
 
 def test_parent_station_has_no_mutable_occupancy_state() -> None:

@@ -10,6 +10,9 @@ from .enums import (
     DeviceImplementationState,
     SampleHistoryEventType,
     SampleStatus,
+    ExecutionMode,
+    WorkflowStatus,
+    WorkflowStepStatus,
 )
 from .errors import (
     ConfigurationError,
@@ -26,6 +29,10 @@ from .errors import (
     ResourceInUseError,
     StationDisabledError,
     StationOccupiedError,
+    ResourceResolutionError,
+    InvalidWorkflowTransitionError,
+    PreflightError,
+    SimulationTransportError,
     SlotDisabledError,
 )
 from .recipe import Recipe, RecipeStep
@@ -65,4 +72,11 @@ __all__ = [
     "StationOccupiedError",
     "StationSlot",
     "SlotDisabledError",
+    "ExecutionMode",
+    "WorkflowStatus",
+    "WorkflowStepStatus",
+    "ResourceResolutionError",
+    "InvalidWorkflowTransitionError",
+    "PreflightError",
+    "SimulationTransportError",
 ]
