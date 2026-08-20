@@ -20,6 +20,11 @@ class StationSlotRegistry(ResourceRegistry[StationSlot]):
         super().__init__()
         self._stations = stations
 
+    @property
+    def station_registry(self) -> StationRegistry:
+        """Return the exact parent registry used for referential validation."""
+        return self._stations
+
     def add(self, slot: StationSlot) -> None:
         """Add a slot after validating its parent, id, and station-local index."""
         self._stations.get(slot.parent_station_id)
@@ -40,7 +45,8 @@ class StationSlotRegistry(ResourceRegistry[StationSlot]):
         slot = self.get(resource_id)
         if slot.occupancy:
             raise StationOccupiedError(
-                f"cannot remove occupied slot {resource_id!r}"
+                f"cannot remove occupied slot {resource_id!r}; "
+                "remove the samples first"
             )
         return super().remove(resource_id)
 

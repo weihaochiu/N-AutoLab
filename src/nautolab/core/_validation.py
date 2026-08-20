@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from .errors import InvalidIdentifierError
+from .errors import InvalidBooleanError, InvalidIdentifierError
 
 
 _IDENTIFIER_PATTERN = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
@@ -31,6 +31,15 @@ def validate_non_empty_text(value: str, *, field_name: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise InvalidIdentifierError(f"{field_name} must be non-empty text")
     return value.strip()
+
+
+def validate_bool(value: bool, *, field_name: str) -> bool:
+    """Return an actual Boolean and reject truthy/falsy substitutes."""
+    if type(value) is not bool:
+        raise InvalidBooleanError(
+            f"{field_name} must be a Boolean true/false value; got {value!r}"
+        )
+    return value
 
 
 def normalize_identifiers(values: tuple[str, ...] | list[str], *, field_name: str) -> tuple[str, ...]:

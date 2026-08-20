@@ -105,16 +105,24 @@ class Sample:
 
         This is intentionally private. ``LabState`` is the canonical caller.
         """
-        self._current_location = destination
-        self._history.append(
-            SampleHistoryEntry(
-                event_type=event_type,
-                source=source,
-                destination=destination,
-                note=note,
-                metadata=dict(metadata or {}),
-            )
+        entry = SampleHistoryEntry(
+            event_type=event_type,
+            source=source,
+            destination=destination,
+            note=note,
+            metadata=dict(metadata or {}),
         )
+        self._history.append(entry)
+        self._current_location = destination
+
+    def _restore_location_state(
+        self,
+        location: str | None,
+        history: tuple[SampleHistoryEntry, ...],
+    ) -> None:
+        """Restore a LabState transaction snapshot after an exception."""
+        self._current_location = location
+        self._history[:] = history
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON/YAML-friendly sample data."""

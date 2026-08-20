@@ -17,8 +17,16 @@ class ResourceNotFoundError(NautolabError):
     """Raised when a required registry resource does not exist."""
 
 
+class ResourceInUseError(NautolabError):
+    """Raised when destructive removal would leave a dangling relationship."""
+
+
 class InvalidCapacityError(NautolabError):
     """Raised when a sample-holding resource capacity is invalid."""
+
+
+class InvalidBooleanError(NautolabError):
+    """Raised when a Boolean domain field receives a non-Boolean value."""
 
 
 class DuplicateSlotIndexError(NautolabError):

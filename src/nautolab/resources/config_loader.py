@@ -66,14 +66,20 @@ def load_lab_config(path: Path) -> LabState:
                 )
             for entry in slot_data:
                 slot_index = _required(entry, "index", f"station {station.id} slot")
-                parent_station_id = entry.get("parent_station_id", station.id)
+                explicit_parent_id = entry.get("parent_station_id")
+                if explicit_parent_id is not None and explicit_parent_id != station.id:
+                    raise ConfigurationError(
+                        f"slot {_required(entry, 'id', f'station {station.id} slot')!r} "
+                        f"is nested under station {station.id!r} but declares parent "
+                        f"{explicit_parent_id!r}"
+                    )
                 state.slots.add(
                     StationSlot(
                         id=_required(entry, "id", f"station {station.id} slot"),
                         display_name=_required(
                             entry, "display_name", f"station {station.id} slot"
                         ),
-                        parent_station_id=parent_station_id,
+                        parent_station_id=station.id,
                         slot_index=slot_index,
                         capacity=entry.get("capacity", 1),
                         pose_reference=entry.get("pose_reference"),

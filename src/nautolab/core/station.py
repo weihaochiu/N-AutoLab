@@ -7,6 +7,7 @@ from typing import Any
 
 from ._validation import (
     normalize_identifiers,
+    validate_bool,
     validate_identifier,
     validate_non_empty_text,
     validate_station_instance_id,
@@ -36,6 +37,7 @@ class Station:
         self.station_type = validate_identifier(self.station_type, field_name="station_type")
         self.id = validate_station_instance_id(self.id, station_type=self.station_type)
         self.display_name = validate_non_empty_text(self.display_name, field_name="display_name")
+        self.enabled = validate_bool(self.enabled, field_name=f"station {self.id} enabled")
         if self.pose_reference is not None:
             self.pose_reference = validate_identifier(
                 self.pose_reference, field_name="pose_reference"

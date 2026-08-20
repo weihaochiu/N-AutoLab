@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Sequence
 
-from ._validation import validate_identifier, validate_non_empty_text
+from ._validation import validate_bool, validate_identifier, validate_non_empty_text
 from .action import Action
 from .errors import InvalidRecipeError
 
@@ -27,6 +27,11 @@ class RecipeStep:
             raise InvalidRecipeError("recipe step order must be a non-negative integer")
         if not isinstance(self.action, Action):
             raise InvalidRecipeError("recipe step action must be an Action")
+        object.__setattr__(
+            self,
+            "enabled",
+            validate_bool(self.enabled, field_name=f"recipe step {self.step_id} enabled"),
+        )
         object.__setattr__(self, "description", self.description.strip())
         object.__setattr__(self, "metadata", dict(self.metadata))
 

@@ -7,6 +7,7 @@ from typing import Any
 
 from ._validation import (
     normalize_identifiers,
+    validate_bool,
     validate_identifier,
     validate_non_empty_text,
     validate_slot_id,
@@ -42,6 +43,7 @@ class StationSlot:
             slot_index=self.slot_index,
         )
         self.display_name = validate_non_empty_text(self.display_name, field_name="display_name")
+        self.enabled = validate_bool(self.enabled, field_name=f"slot {self.id} enabled")
         if isinstance(self.capacity, bool) or not isinstance(self.capacity, int) or self.capacity < 0:
             raise InvalidCapacityError(
                 f"slot {self.id!r} capacity must be a non-negative integer"
@@ -94,6 +96,10 @@ class StationSlot:
                 f"sample {sample_id!r} does not occupy slot {self.id!r}"
             )
         self._occupant_ids.remove(sample_id)
+
+    def _restore_occupants(self, occupant_ids: tuple[str, ...]) -> None:
+        """Restore a LabState transaction snapshot after an exception."""
+        self._occupant_ids[:] = occupant_ids
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON/YAML-friendly slot state."""

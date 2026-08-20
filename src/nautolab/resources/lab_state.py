@@ -6,12 +6,16 @@ from typing import Any, Mapping
 
 from nautolab.core import (
     LocationMismatchError,
+    ResourceInUseError,
+    Sample,
     SampleHistoryEventType,
     SlotDisabledError,
+    Station,
     StationDisabledError,
     StationOccupiedError,
     StationSlot,
 )
+from nautolab.core._validation import validate_identifier
 
 from .device_registry import DeviceRegistry
 from .sample_registry import SampleRegistry
@@ -33,9 +37,10 @@ class LabState:
         stations: StationRegistry | None = None,
         devices: DeviceRegistry | None = None,
     ) -> None:
-        self.samples = samples or SampleRegistry()
-        self.stations = stations or StationRegistry()
-        self.devices = devices or DeviceRegistry()
+        self.samples = samples if samples is not None else SampleRegistry()
+        self.stations = stations if stations is not None else StationRegistry()
+        self.devices = devices if devices is not None else DeviceRegistry()
+        self.stations._manage_relational_removal()
         self.slots = StationSlotRegistry(self.stations)
 
     def place_sample(
@@ -48,6 +53,7 @@ class LabState:
     ) -> None:
         """Place an unlocated sample in an exact slot atomically."""
         transition_metadata = dict(metadata or {})
+        validate_identifier(sample_id, field_name="sample_id")
         sample = self.samples.get(sample_id)
         slot = self.slots.get(slot_id)
         if sample.current_location is not None:
@@ -56,11 +62,13 @@ class LabState:
             )
         self._validate_destination(slot, sample_id)
 
-        slot._add_occupant(sample_id)
-        sample._record_location_transition(
-            event_type=SampleHistoryEventType.PLACED,
+        self._apply_location_transition(
+            sample=sample,
             source=None,
-            destination=slot_id,
+            destination=slot,
+            event_type=SampleHistoryEventType.PLACED,
+            source_id=None,
+            destination_id=slot_id,
             note=note,
             metadata=transition_metadata,
         )
@@ -75,6 +83,7 @@ class LabState:
     ) -> None:
         """Remove a located sample from its exact slot atomically."""
         transition_metadata = dict(metadata or {})
+        validate_identifier(sample_id, field_name="sample_id")
         sample = self.samples.get(sample_id)
         source_id = slot_id or sample.current_location
         if source_id is None:
@@ -82,11 +91,13 @@ class LabState:
         source = self.slots.get(source_id)
         self._validate_source(sample_id, source)
 
-        source._remove_occupant(sample_id)
-        sample._record_location_transition(
-            event_type=SampleHistoryEventType.REMOVED,
-            source=source_id,
+        self._apply_location_transition(
+            sample=sample,
+            source=source,
             destination=None,
+            event_type=SampleHistoryEventType.REMOVED,
+            source_id=source_id,
+            destination_id=None,
             note=note,
             metadata=transition_metadata,
         )
@@ -102,6 +113,7 @@ class LabState:
     ) -> None:
         """Change exact slot state without simulating or commanding transport."""
         transition_metadata = dict(metadata or {})
+        validate_identifier(sample_id, field_name="sample_id")
         if source_slot_id == destination_slot_id:
             raise LocationMismatchError("source and destination slots must differ")
 
@@ -111,15 +123,32 @@ class LabState:
         self._validate_source(sample_id, source)
         self._validate_destination(destination, sample_id)
 
-        source._remove_occupant(sample_id)
-        destination._add_occupant(sample_id)
-        sample._record_location_transition(
+        self._apply_location_transition(
+            sample=sample,
+            source=source,
+            destination=destination,
             event_type=SampleHistoryEventType.RELOCATED,
-            source=source_slot_id,
-            destination=destination_slot_id,
+            source_id=source_slot_id,
+            destination_id=destination_slot_id,
             note=note,
             metadata=transition_metadata,
         )
+
+    def remove_sample_resource(self, sample_id: str) -> Sample:
+        """Remove an unplaced Sample resource without changing location state."""
+        return self.samples.remove(sample_id)
+
+    def remove_station_resource(self, station_id: str) -> Station:
+        """Remove a Station only after all child Slots were explicitly removed."""
+        station = self.stations.get(station_id)
+        child_slots = self.slots.list_by_station(station_id)
+        if child_slots:
+            child_ids = ", ".join(slot.id for slot in child_slots)
+            raise ResourceInUseError(
+                f"cannot remove station {station_id!r}: child slots still exist: "
+                f"{child_ids}; remove empty slots first"
+            )
+        return self.stations._remove_from_lab_state(station.id)
 
     def station_total_capacity(self, station_id: str) -> int:
         """Return the sum of all child-slot capacities."""
@@ -184,3 +213,42 @@ class LabState:
             raise StationOccupiedError(
                 f"slot {slot.id!r} is full ({slot.occupancy}/{slot.capacity})"
             )
+
+    @staticmethod
+    def _apply_location_transition(
+        *,
+        sample: Sample,
+        source: StationSlot | None,
+        destination: StationSlot | None,
+        event_type: SampleHistoryEventType,
+        source_id: str | None,
+        destination_id: str | None,
+        note: str | None,
+        metadata: Mapping[str, Any],
+    ) -> None:
+        """Apply a prevalidated transition and roll back unexpected exceptions."""
+        sample_location_before = sample.current_location
+        sample_history_before = sample.history
+        source_occupants_before = source.occupant_ids if source is not None else None
+        destination_occupants_before = (
+            destination.occupant_ids if destination is not None else None
+        )
+        try:
+            if source is not None:
+                source._remove_occupant(sample.id)
+            if destination is not None:
+                destination._add_occupant(sample.id)
+            sample._record_location_transition(
+                event_type=event_type,
+                source=source_id,
+                destination=destination_id,
+                note=note,
+                metadata=metadata,
+            )
+        except Exception:
+            if source is not None and source_occupants_before is not None:
+                source._restore_occupants(source_occupants_before)
+            if destination is not None and destination_occupants_before is not None:
+                destination._restore_occupants(destination_occupants_before)
+            sample._restore_location_state(sample_location_before, sample_history_before)
+            raise
