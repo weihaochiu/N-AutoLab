@@ -4,14 +4,19 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 import tempfile
 import zipfile
+from collections.abc import Callable, Iterable
 from datetime import datetime
 from pathlib import Path
 
 
 class BackupError(RuntimeError):
     """Raised when an exact-commit backup cannot be proven usable."""
+
+
+ZERO_SHA = "0" * 40
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -66,18 +71,55 @@ def create_backup(repo: Path, *, commit: str = "HEAD", keep: int = 10) -> Path:
     return destination
 
 
+def pushed_commit_shas(lines: Iterable[str]) -> tuple[str, ...]:
+    """Parse and deduplicate non-deletion local SHAs from pre-push stdin."""
+    unique: list[str] = []
+    for line_number, raw_line in enumerate(lines, 1):
+        line = raw_line.strip()
+        if not line:
+            continue
+        fields = line.split()
+        if len(fields) != 4:
+            raise BackupError(f"malformed pre-push input at line {line_number}")
+        _local_ref, local_sha, _remote_ref, _remote_sha = fields
+        if len(local_sha) != 40 or any(character not in "0123456789abcdefABCDEF" for character in local_sha):
+            raise BackupError(f"invalid local SHA at pre-push line {line_number}: {local_sha!r}")
+        local_sha = local_sha.lower()
+        if local_sha != ZERO_SHA and local_sha not in unique:
+            unique.append(local_sha)
+    return tuple(unique)
+
+
+def backup_pushed_refs(
+    repo: Path,
+    lines: Iterable[str],
+    *,
+    keep: int = 10,
+    creator: Callable[..., Path] = create_backup,
+) -> tuple[Path, ...]:
+    """Back up every unique commit Git says it will push; never assume HEAD."""
+    return tuple(creator(repo, commit=sha, keep=keep) for sha in pushed_commit_shas(lines))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--commit", default="HEAD")
+    parser.add_argument("--commit", default=None, help="manual exact-commit backup (defaults to HEAD)")
+    parser.add_argument("--pre-push", action="store_true", help="read pushed refs from stdin")
     parser.add_argument("--keep", type=int, default=10)
     args = parser.parse_args()
     try:
-        path = create_backup(args.repo, commit=args.commit, keep=args.keep)
+        if args.pre_push:
+            paths = backup_pushed_refs(args.repo, sys.stdin, keep=args.keep)
+        else:
+            paths = (create_backup(args.repo, commit=args.commit or "HEAD", keep=args.keep),)
     except (BackupError, OSError, zipfile.BadZipFile) as exc:
         print(f"PRE-PUSH BACKUP FAILED: {exc}")
         return 1
-    print(f"Verified exact-commit backup: {path}")
+    if not paths:
+        print("Pre-push contains only deletions; no source backup required")
+    for path in paths:
+        print(f"Verified exact-commit backup: {path}")
     return 0
 
 

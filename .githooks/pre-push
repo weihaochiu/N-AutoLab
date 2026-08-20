@@ -1,5 +1,5 @@
 #!/bin/sh
 # A backup of committed state is mandatory. Any failure blocks the push.
 repo_root=$(git rev-parse --show-toplevel) || exit 1
-python "$repo_root/scripts/backup_commit.py" --repo "$repo_root" --commit HEAD --keep 10
+python "$repo_root/scripts/backup_commit.py" --pre-push --repo "$repo_root" --keep 10
 exit $?
