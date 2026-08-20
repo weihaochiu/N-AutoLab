@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from nautolab.core import ActionType, ExecutionMode, Recipe
-from nautolab.resources import LabState
+from nautolab.core import (
+    ActionType, ExecutionMode, Recipe, ResourceNotFoundError, ResourceResolutionError,
+)
+from nautolab.resources import LabState, ResourceResolver
 from nautolab.workflow.builder import build_workflow
 from nautolab.workflow.events import EventBus, PreflightFailed
 from nautolab.workflow.model import Workflow
@@ -52,17 +54,10 @@ class PreflightService:
                     slot = self._lab.slots.get(sample.current_location)
                     if not slot.contains_sample(sample.id):
                         issues.append(PreflightIssue("LOCATION_MISMATCH", f"{sample.id} location and slot occupancy disagree"))
-                except Exception as exc:
+                except ResourceNotFoundError as exc:
                     issues.append(PreflightIssue("LOCATION_INVALID", f"{sample.id}: {exc}"))
 
-        for step in recipe.steps:
-            if not step.enabled:
-                continue
-            action = step.action
-            if action.action_type not in {ActionType.MOVE_SAMPLE, ActionType.WAIT}:
-                issues.append(PreflightIssue("UNSUPPORTED_ACTION", f"{action.action_type.value} has no simulation implementation"))
-            if action.sample_id and not self._lab.samples.contains(action.sample_id):
-                issues.append(PreflightIssue("SAMPLE_MISSING", f"{action.sample_id} not found"))
+        issues.extend(self._check_steps(recipe))
 
         workflow = None
         if not issues:
@@ -74,3 +69,48 @@ class PreflightService:
         if issues and self._events:
             self._events.publish(PreflightFailed(message=report.format()))
         return report
+
+    def _check_steps(self, recipe: Recipe) -> list[PreflightIssue]:
+        """Collect independent and sequential resolution failures without mutation."""
+        issues: list[PreflightIssue] = []
+        resolver = ResourceResolver(self._lab)
+        occupancy = {slot.id: slot.occupancy for slot in self._lab.slots.list_all()}
+        locations = {sample.id: sample.current_location for sample in self._lab.samples.list_all()}
+        for step in recipe.steps:
+            if not step.enabled:
+                continue
+            action = step.action
+            if action.action_type not in {ActionType.MOVE_SAMPLE, ActionType.WAIT}:
+                issues.append(PreflightIssue("UNSUPPORTED_ACTION", f"{action.action_type.value} has no simulation implementation"))
+                continue
+            if action.action_type is ActionType.WAIT:
+                continue
+            assert action.sample_id and action.source_slot_id and action.destination
+            sample_exists = self._lab.samples.contains(action.sample_id)
+            if not sample_exists:
+                issues.append(PreflightIssue("SAMPLE_MISSING", f"{action.sample_id} not found"))
+            source_exists = self._lab.slots.contains(action.source_slot_id)
+            if not source_exists:
+                issues.append(PreflightIssue("SOURCE_MISSING", f"source slot {action.source_slot_id} not found"))
+            source_released = False
+            if sample_exists and source_exists:
+                actual = locations[action.sample_id]
+                if actual != action.source_slot_id or occupancy[action.source_slot_id] <= 0:
+                    issues.append(PreflightIssue(
+                        "SOURCE_MISMATCH",
+                        f"{action.sample_id} expected at {action.source_slot_id}, found {actual}",
+                    ))
+                else:
+                    occupancy[action.source_slot_id] -= 1
+                    source_released = True
+            try:
+                destination = resolver.resolve(action.destination, occupancy=occupancy)
+            except ResourceResolutionError as exc:
+                issues.append(PreflightIssue("DESTINATION_UNAVAILABLE", f"{step.step_id}: {exc}"))
+                if source_released:
+                    occupancy[action.source_slot_id] += 1
+            else:
+                if source_released:
+                    occupancy[destination.id] = occupancy.get(destination.id, destination.occupancy) + 1
+                    locations[action.sample_id] = destination.id
+        return issues

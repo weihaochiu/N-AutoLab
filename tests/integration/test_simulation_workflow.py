@@ -95,3 +95,23 @@ def test_real_mode_is_forbidden_and_failures_aggregate() -> None:
     recipe = Recipe("empty", "Empty", [])
     report = PreflightService(lab).check(recipe, ExecutionMode.REAL)
     assert {issue.code for issue in report.issues} == {"REAL_FORBIDDEN", "EMPTY_RECIPE"}
+
+
+def test_preflight_aggregates_missing_sample_full_type_and_disabled_station() -> None:
+    lab = LabState()
+    lab.stations.add(Station("storage_01", "Storage", "storage"))
+    lab.slots.add(StationSlot("storage_01.slot_01", "ST1", "storage_01", 1))
+    lab.stations.add(Station("hotplate_01", "HP", "hotplate"))
+    lab.slots.add(StationSlot("hotplate_01.slot_01", "HP1", "hotplate_01", 1))
+    occupant = Sample("sample_001", "Occupant"); lab.samples.add(occupant); lab.place_sample(occupant.id, "hotplate_01.slot_01")
+    lab.stations.add(Station("spin_coater_01", "SC", "spin_coater", enabled=False))
+    lab.slots.add(StationSlot("spin_coater_01.slot_01", "SC1", "spin_coater_01", 1))
+    recipe = Recipe("aggregate", "Aggregate", (
+        RecipeStep("hotplate_step", 1, Action("move_hotplate", ActionType.MOVE_SAMPLE, "sample_missing", "storage_01.slot_01", MoveDestination(station_type="hotplate"))),
+        RecipeStep("spin_step", 2, Action("move_spin", ActionType.MOVE_SAMPLE, "sample_missing", "storage_01.slot_01", MoveDestination(exact_station_id="spin_coater_01"))),
+    ))
+    report = PreflightService(lab).check(recipe)
+    messages = "\n".join(issue.message for issue in report.issues)
+    assert "sample_missing not found" in messages
+    assert "hotplate" in messages and "no available slot" in messages
+    assert "spin_coater_01" in messages and "disabled" in messages
