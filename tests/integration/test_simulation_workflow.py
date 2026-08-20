@@ -16,18 +16,18 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def _golden_recipe() -> Recipe:
-    moves = [
-        ("storage_01.slot_01", MoveDestination(station_type="hotplate")),
-        ("hotplate_01.slot_03", MoveDestination(station_type="spin_coater")),
-        ("spin_coater_01.slot_01", MoveDestination(station_type="hotplate")),
-        ("hotplate_01.slot_03", MoveDestination(exact_slot_id="storage_01.slot_01")),
+    destinations = [
+        MoveDestination(station_type="hotplate"),
+        MoveDestination(station_type="spin_coater"),
+        MoveDestination(station_type="hotplate"),
+        MoveDestination(exact_slot_id="storage_01.slot_01"),
     ]
     return Recipe("golden_recipe", "Golden Path", [
         RecipeStep(
             f"move_{index}", index,
-            Action(f"action_{index}", ActionType.MOVE_SAMPLE, "sample_001", source, destination,
+            Action(f"action_{index}", ActionType.MOVE_SAMPLE, "sample_001", None, destination,
                    parameters={"duration_seconds": 120}),
-        ) for index, (source, destination) in enumerate(moves, 1)
+        ) for index, destination in enumerate(destinations, 1)
     ])
 
 
@@ -41,6 +41,10 @@ def test_golden_path_resolves_and_executes_without_real_wait() -> None:
     assert destinations == [
         "hotplate_01.slot_03", "spin_coater_01.slot_01",
         "hotplate_01.slot_03", "storage_01.slot_01",
+    ]
+    assert [step.source_slot_id for step in report.workflow.steps] == [
+        "storage_01.slot_01", "hotplate_01.slot_03",
+        "spin_coater_01.slot_01", "hotplate_01.slot_03",
     ]
     report.workflow.transition(WorkflowStatus.READY)
     executor = WorkflowExecutor(SimulationTransporter(lab, events), events)

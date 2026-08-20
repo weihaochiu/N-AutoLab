@@ -109,8 +109,6 @@ class Action:
             missing: list[str] = []
             if self.sample_id is None:
                 missing.append("sample_id")
-            if self.source_slot_id is None:
-                missing.append("source_slot_id")
             if self.destination is None:
                 missing.append("destination")
             if missing:
@@ -119,7 +117,10 @@ class Action:
                 )
             if not isinstance(self.destination, MoveDestination):
                 raise InvalidActionError("MOVE_SAMPLE destination must be MoveDestination")
-            if self.destination.exact_slot_id == self.source_slot_id:
+            if (
+                self.source_slot_id is not None
+                and self.destination.exact_slot_id == self.source_slot_id
+            ):
                 raise InvalidActionError("MOVE_SAMPLE source and exact destination must differ")
         elif self.destination is not None:
             raise InvalidActionError("destination is valid only for MOVE_SAMPLE actions")

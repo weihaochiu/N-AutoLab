@@ -58,6 +58,17 @@ def test_move_sample_requires_all_references() -> None:
         )
 
 
+def test_move_sample_source_is_optional_auto_current() -> None:
+    action = Action(
+        id="move_auto",
+        action_type="MOVE_SAMPLE",
+        sample_id="sample_001",
+        destination=MoveDestination(station_type="hotplate"),
+    )
+    assert action.source_slot_id is None
+    assert action.to_dict()["source_slot_id"] is None
+
+
 def test_move_sample_requires_distinct_exact_slots() -> None:
     with pytest.raises(InvalidActionError, match="must differ"):
         Action(

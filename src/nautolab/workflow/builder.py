@@ -27,20 +27,30 @@ def build_workflow(recipe: Recipe, lab: LabState, events: EventBus | None = None
         action = recipe_step.action
         destination_id = None
         if action.action_type is ActionType.MOVE_SAMPLE:
-            assert action.sample_id and action.source_slot_id and action.destination
+            assert action.sample_id and action.destination
             if not lab.samples.contains(action.sample_id):
                 raise InvalidRecipeError(f"sample {action.sample_id!r} is not registered")
-            current = locations[action.sample_id]
-            if current != action.source_slot_id:
+            current_source = locations[action.sample_id]
+            if current_source is None:
                 raise LocationMismatchError(
-                    f"sample {action.sample_id!r} expected at {action.source_slot_id!r}, found {current!r}"
+                    f"sample {action.sample_id!r} has no current resolved location"
                 )
-            occupancy[action.source_slot_id] -= 1
+            if action.source_slot_id is not None and action.source_slot_id != current_source:
+                raise LocationMismatchError(
+                    f"SOURCE_MISMATCH: sample {action.sample_id!r} expected at "
+                    f"{action.source_slot_id!r}, found {current_source!r}"
+                )
+            occupancy[current_source] -= 1
             try:
                 destination = resolver.resolve(action.destination, occupancy=occupancy)
             except Exception:
-                occupancy[action.source_slot_id] += 1
+                occupancy[current_source] += 1
                 raise
+            if destination.id == current_source:
+                occupancy[current_source] += 1
+                raise InvalidRecipeError(
+                    f"MOVE_SAMPLE source and resolved destination must differ: {current_source}"
+                )
             destination_id = destination.id
             occupancy[destination_id] = occupancy.get(destination_id, destination.occupancy) + 1
             locations[action.sample_id] = destination_id
@@ -54,7 +64,7 @@ def build_workflow(recipe: Recipe, lab: LabState, events: EventBus | None = None
             recipe_step_id=recipe_step.step_id,
             action_type=action.action_type,
             sample_id=action.sample_id,
-            source_slot_id=action.source_slot_id,
+            source_slot_id=current_source if action.action_type is ActionType.MOVE_SAMPLE else None,
             destination_slot_id=destination_id,
             duration_seconds=duration,
         ))
