@@ -163,6 +163,12 @@ The planned Phase 1B Resource Resolver will distinguish exact Slot, exact
 Station/auto Slot, and Station type/auto Station+Slot intent. Phase 1A.1 defines
 only the serializable intent and sorted read queries.
 
+Phase 1A.1 hardening adds N-AutoLab-owned invariants around relationship-safe
+deletion, strict Boolean enable fields, nested configuration ownership,
+injected registry identity, and rollback after unexpected partial mutations.
+These safeguards are original domain rules; they do not add or copy behavior
+from the reference projects and do not change the reference allocation above.
+
 ## License Boundary
 
 Architecture ideas and publicly documented behavior were studied. Implementations will be original N-AutoLab code unless a later dependency or source reuse decision records license compatibility, attribution, distribution obligations, and approval. Orca's AGPL-3.0-only implementation is specifically excluded from copying.

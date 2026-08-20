@@ -36,6 +36,9 @@ not authorize work in the next.
 - Migrate the demo to schema version 2 with two independent Hot Plates.
 - Define declarative exact-Slot, exact-Station, and Station-type destination
   intent without resolving or executing it.
+- Harden destructive resource mutations, unexpected-exception rollback,
+  strict Boolean enable fields, nested Slot ownership, and injected registry
+  identity before the Phase 1B gate.
 - Perform no resource resolution, workflow execution, scheduling, simulation,
   GUI, or hardware access.
 

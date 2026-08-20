@@ -30,6 +30,12 @@ poses, capacity greater than one per slot, and deterministic future allocation.
 The resource model is slightly more complex, and Phase 1B must distinguish exact
 Slot, exact Station/auto Slot, and Station type/auto Station+Slot intentions.
 
+Configuration nesting is authoritative: an optional explicit Slot parent must
+equal its outer Station, and the canonical Slot ID must agree with that parent
+and index. A Station cannot be removed while child Slots exist, and occupied
+Slots cannot be removed. Enable fields use strict Booleans so configuration
+truthiness cannot silently reverse availability policy.
+
 ## References
 
 - PyLabRobot resource hierarchy concept (concept only; no copied code)

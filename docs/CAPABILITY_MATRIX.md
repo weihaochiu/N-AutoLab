@@ -28,6 +28,10 @@ execution, simulation, GUI availability, or real-hardware readiness.
 | SampleRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca registry concept |
 | StationRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca registry concept |
 | StationSlotRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 | Orca registry concept + N-AutoLab |
+| Resource relationship deletion guards | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 Hardening | N-AutoLab ADRs 0006–0007 |
+| Strict resource enable-state validation | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 Hardening | N-AutoLab |
+| Nested Slot ownership validation | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 Hardening | N-AutoLab ADR 0007 |
+| Injected registry identity preservation | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 Hardening | N-AutoLab |
 | DeviceRegistry | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca registry concept |
 | Action declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A | Orca concept + N-AutoLab |
 | Destination intent declaration | YES | N/A | N/A | NO | YES | IMPLEMENTED | 1A.1 | N-AutoLab |

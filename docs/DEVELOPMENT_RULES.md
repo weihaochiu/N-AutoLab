@@ -85,6 +85,25 @@ Parent Station capacity, occupancy, availability, and occupants are calculated
 from child Slot state. Station must not maintain a second mutable canonical
 occupancy list.
 
+## Rule 15 — Protect relational deletion
+
+Delete related resources through `LabState` domain operations. A placed Sample
+must be explicitly unplaced before resource deletion, a Station must retain its
+identity while child Slots exist, and an occupied Slot cannot be removed. Do
+not add Registry callbacks to `LabState` or cascade deletion implicitly.
+
+## Rule 16 — Require actual Boolean enable flags
+
+Safety- and allocation-relevant enable fields accept only `True` or `False`.
+Do not coerce strings, integers, `None`, or containers through truthiness.
+
+## Rule 17 — Make configuration nesting authoritative
+
+A Slot nested under a Station belongs to that outer Station. An explicit
+`parent_station_id` may repeat the outer Station ID for round-trip compatibility
+but must never redirect ownership; canonical Slot ID validation remains the
+single source for ID/parent/index agreement.
+
 ## Python and Project Style
 
 - Python 3.11 or newer.

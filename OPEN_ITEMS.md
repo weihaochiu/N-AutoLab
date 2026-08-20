@@ -52,6 +52,17 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Tests:** Unit tests for truthful states, capability lookup, serialization, and architecture boundaries.
 - **Notes:** Do not add vendor SDK dependencies.
 
+### NAL-CORE-004 — Preserve injected registry identity
+
+- **Status:** DONE
+- **Phase:** 1A.1 Hardening
+- **Goal:** Preserve explicitly injected Sample, Station, and Device registry instances, including empty registries.
+- **Reference:** `ARCHITECTURE.md` §6; N-AutoLab dependency-injection contract
+- **Dependencies:** NAL-RES-001, NAL-RES-002, NAL-RES-003
+- **Acceptance Criteria:** Empty and populated registries retain object identity and resources; StationSlotRegistry binds to the same injected StationRegistry.
+- **Tests:** `tests/unit/test_lab_state_constructor.py`
+- **Notes:** Constructor selection uses explicit `is not None`, never registry truthiness.
+
 ## Resources / Station
 
 ### NAL-RES-001 — Implement StationRegistry
@@ -163,6 +174,39 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Acceptance Criteria:** Disabled/full resources are excluded; ordering is Station canonical ID then Slot index; queries have no side effects.
 - **Tests:** Same-Station, multiple-Hot-Plate, full/disabled, and deterministic-order tests.
 - **Notes:** Selection/reservation policy remains Phase 1B.
+
+### NAL-RES-011 — Enforce resource relationship integrity
+
+- **Status:** DONE
+- **Phase:** 1A.1 Hardening
+- **Goal:** Prevent destructive Registry mutations from leaving dangling Sample occupancy or orphan StationSlots.
+- **Reference:** ADRs 0006–0007; `ARCHITECTURE.md` §6
+- **Dependencies:** NAL-RES-004, NAL-RES-007, NAL-RES-009
+- **Acceptance Criteria:** Placed Samples, Stations with any child Slots, and occupied Slots reject deletion; unplaced Samples, empty Slots, and childless Stations remain explicitly removable; unexpected partial transition failures roll back.
+- **Tests:** Resource-integrity and transition-atomicity integration tests.
+- **Notes:** `LabState` owns relational deletion; no cascade delete, Registry callback, or duplicate occupancy state was added.
+
+### NAL-RES-012 — Enforce strict resource enable-state validation
+
+- **Status:** DONE
+- **Phase:** 1A.1 Hardening
+- **Goal:** Reject truthy/falsy substitutes for declarative enable fields.
+- **Reference:** `docs/DEVELOPMENT_RULES.md` Rule 16
+- **Dependencies:** NAL-CORE-002, NAL-RES-006
+- **Acceptance Criteria:** Only actual `True` and `False` values are accepted for Station and StationSlot enabled state; the confirmed equivalent RecipeStep bug is also guarded.
+- **Tests:** Station, StationSlot, RecipeStep unit tests and YAML configuration integration tests.
+- **Notes:** Validation uses `type(value) is bool`; no implicit coercion.
+
+### NAL-RES-013 — Enforce nested Slot parent ownership
+
+- **Status:** DONE
+- **Phase:** 1A.1 Hardening
+- **Goal:** Keep YAML Station nesting, Slot parent relationship, and canonical Slot identity identical.
+- **Reference:** ADR 0007; `docs/DEVELOPMENT_RULES.md` Rule 17
+- **Dependencies:** NAL-RES-005, NAL-RES-006, NAL-RES-007
+- **Acceptance Criteria:** Omitted parent is inferred; an equal explicit parent is accepted; a different parent or Slot ID belonging to another Station is rejected.
+- **Tests:** Configuration parent-ownership and canonical-ID integration tests.
+- **Notes:** The existing `validate_slot_id` enforces ID ownership; no duplicate regex was introduced.
 
 ## Workflow
 

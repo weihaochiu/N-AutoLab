@@ -215,7 +215,21 @@ relocate_sample
 Each operation resolves all resources and validates source agreement, parent
 Station enabled state, Slot enabled state, duplicate occupancy, and Slot
 capacity before changing either object. A rejected operation leaves both views
-and sample history unchanged.
+and sample history unchanged. The in-memory transaction also restores its
+snapshots if an unexpected exception occurs after a private mutation hook has
+started changing state.
+
+Relational deletion belongs to `LabState`, not arbitrary caller sequencing. A
+placed Sample resource cannot be deleted until it is explicitly removed from
+its Slot. A Station cannot be deleted while any child Slot exists; empty Slots
+must be removed explicitly first, and occupied Slots remain protected by the
+Slot registry. Specialized registry guards prevent the exposed mutable
+registries from bypassing this boundary without introducing Registry →
+`LabState` callbacks or circular ownership.
+
+When registries are injected into `LabState`, their object identity is
+preserved—including empty registries—and the Slot registry is bound to that
+same final Station registry instance.
 
 Parent Station occupancy is never stored as a second mutable list. `LabState`
 derives total capacity, occupancy, available capacity, and aggregate occupant
@@ -226,6 +240,13 @@ schedule, resolve workflow intent, or mutate state.
 `StationRegistry.list_by_type()` orders Station instances by canonical ID;
 `StationSlotRegistry.list_by_station()` orders slots by `slot_index`.
 Registries are owned instances, not process-global mutable state.
+
+`Station.enabled`, `StationSlot.enabled`, and any equivalent declarative enable
+flag are strict Booleans: only `True` and `False` are valid. Strings, integers,
+`None`, and other truthy/falsy substitutes are rejected. For a Slot nested in a
+Station configuration, the outer Station owns the parent relationship. An
+optional explicit `parent_station_id` is accepted only when it equals the outer
+Station ID, and the canonical Slot ID must match that parent and its Slot index.
 
 Device association is a separate relationship: a Station may reference zero or
 one primary `device_id`; architecture permits a Device to serve one or more

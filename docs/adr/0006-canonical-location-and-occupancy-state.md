@@ -24,6 +24,12 @@ objects retain small private mutation hooks for `LabState`; application,
 workflow, GUI, and configuration code must use the canonical API. Process-level
 concurrency and persistence transactions remain future decisions.
 
+The in-memory boundary snapshots Sample location/history and affected Slot
+occupants before mutation, then restores them if any unexpected exception
+occurs. A placed Sample resource cannot be destructively deleted; callers must
+first perform the distinct unplace operation. This preserves referential
+integrity without database transactions or duplicate occupancy state.
+
 ## References
 
 - `ARCHITECTURE.md` §6
