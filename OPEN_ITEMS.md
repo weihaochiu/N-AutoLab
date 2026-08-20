@@ -1,6 +1,6 @@
 # N-AutoLab Open Items
 
-This is the canonical, categorized backlog. Items describe deliverables and acceptance evidence; source files must not accumulate untracked TODO lists. Completed Phase 1A items retain their acceptance evidence here.
+This is the canonical, categorized backlog. Items describe deliverables and acceptance evidence; source files must not accumulate untracked TODO lists. Completed Phase 1A/1A.1 items retain their acceptance evidence here.
 
 Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
@@ -34,11 +34,11 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 - **Status:** DONE
 - **Phase:** 1A
-- **Goal:** Add general station identity, type, capacity, occupancy, pose reference, capabilities, enabled state, and metadata.
+- **Goal:** Add general station-instance identity, type, service pose reference, capabilities, enabled state, metadata, and device association.
 - **Reference:** PyLabRobot resource concepts; `ARCHITECTURE.md` §6
 - **Dependencies:** NAL-ARCH-001
-- **Acceptance Criteria:** Capacity/occupancy invariants are explicit; coordinates are not embedded in workflow code.
-- **Tests:** Unit tests for occupancy, capacity, enable/disable, metadata, and invalid transitions.
+- **Acceptance Criteria:** Instance ID and station type are separate; Station and Device remain separate; no duplicate canonical occupancy exists on Station.
+- **Tests:** Unit tests for identity, type, enable/disable, metadata, device separation, and invalid IDs.
 - **Notes:** No process-specific station class in Core.
 
 ### NAL-CORE-003 — Implement Device abstraction
@@ -91,11 +91,11 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 
 - **Status:** DONE
 - **Phase:** 1A
-- **Goal:** Keep sample location, station occupancy, capacity, and history consistent.
+- **Goal:** Keep sample exact-slot location, slot occupancy/capacity, parent aggregate, and history consistent.
 - **Reference:** ADR 0006
 - **Dependencies:** NAL-CORE-001, NAL-CORE-002, NAL-RES-001, NAL-RES-002
-- **Acceptance Criteria:** Placement, removal, and relocation update both views atomically; expected failures have no partial mutation.
-- **Tests:** Integration tests for success, mismatch, occupied/disabled destination, and capacity greater than one.
+- **Acceptance Criteria:** Placement, removal, and relocation update Sample and exact Slot atomically; parent Station aggregates are derived; expected failures have no partial mutation.
+- **Tests:** Integration tests for exact-slot success, mismatch, occupied/disabled Slot or parent, aggregate state, and capacity greater than one.
 - **Notes:** This is not transport or workflow execution.
 
 ### NAL-RES-005 — Load portable demo laboratory configuration
@@ -107,7 +107,62 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Dependencies:** NAL-RES-003, NAL-RES-004
 - **Acceptance Criteria:** References, identifiers, capacity, and truthful device states are validated; no hardware settings or access occur.
 - **Tests:** Demo-load and malformed-configuration integration tests.
-- **Notes:** PyYAML is the only Phase 1A runtime dependency.
+- **Notes:** PyYAML is the only runtime dependency; Phase 1A.1 migrated the demo to slot-hierarchy schema version 2.
+
+### NAL-RES-006 — Implement StationSlot model
+
+- **Status:** DONE
+- **Phase:** 1A.1
+- **Goal:** Represent each exact sample position with parent identity, index, capacity, occupants, pose, enabled state, capabilities, and metadata.
+- **Reference:** PyLabRobot resource hierarchy concept; ADR 0007
+- **Dependencies:** NAL-CORE-002
+- **Acceptance Criteria:** Canonical Slot identity is validated; occupancy supports capacity greater than one; state is serializable and hardware-free.
+- **Tests:** StationSlot unit tests for identity, capacity, occupancy, pose, enabled state, capabilities, and invalid data.
+- **Notes:** GUI shorthand is display data, never identity.
+
+### NAL-RES-007 — Implement StationSlotRegistry
+
+- **Status:** DONE
+- **Phase:** 1A.1
+- **Goal:** Register exact Slots with parent validation and deterministic station-local ordering.
+- **Reference:** Orca ResourceRegistry concept; ADR 0007
+- **Dependencies:** NAL-RES-001, NAL-RES-006
+- **Acceptance Criteria:** Parent exists; Slot IDs are unique; `slot_index` is unique within each Station; occupied Slots cannot be removed.
+- **Tests:** Registry CRUD, lookup, parent, duplicate ID/index, ordering, missing resource, and occupied-removal tests.
+- **Notes:** No global singleton or scheduler.
+
+### NAL-RES-008 — Support multi-instance station types
+
+- **Status:** DONE
+- **Phase:** 1A.1
+- **Goal:** Support multiple Station instances with the same `station_type`.
+- **Reference:** Orca SystemMap/resource lookup concept; N-AutoLab ADR 0007
+- **Dependencies:** NAL-RES-001
+- **Acceptance Criteria:** `list_by_type` returns only matching Stations in canonical-ID order; instances retain independent slots/state.
+- **Tests:** Unit and demo integration tests with `hotplate_01` and `hotplate_02`.
+- **Notes:** This is lookup, not workflow resource resolution.
+
+### NAL-RES-009 — Implement slot-level canonical location
+
+- **Status:** DONE
+- **Phase:** 1A.1
+- **Goal:** Make exact Slot identity the only canonical Sample location.
+- **Reference:** ADRs 0006–0007
+- **Dependencies:** NAL-RES-004, NAL-RES-006, NAL-RES-007
+- **Acceptance Criteria:** Sample/Slot views update atomically; Station keeps no occupant list; parent aggregates derive from Slots.
+- **Tests:** Exact placement/relocation/removal, collision, mismatch, disabled Slot/Station, history, and no-partial-mutation tests.
+- **Notes:** No station-level compatibility shim.
+
+### NAL-RES-010 — Implement deterministic availability queries
+
+- **Status:** DONE
+- **Phase:** 1A.1
+- **Goal:** List available Slots for one Station or Station type without allocating them.
+- **Reference:** Orca resource availability concept; N-AutoLab ADR 0007
+- **Dependencies:** NAL-RES-007, NAL-RES-008, NAL-RES-009
+- **Acceptance Criteria:** Disabled/full resources are excluded; ordering is Station canonical ID then Slot index; queries have no side effects.
+- **Tests:** Same-Station, multiple-Hot-Plate, full/disabled, and deterministic-order tests.
+- **Notes:** Selection/reservation policy remains Phase 1B.
 
 ## Workflow
 
@@ -154,6 +209,17 @@ Status vocabulary: `OPEN`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DROPPED`.
 - **Acceptance Criteria:** Recipe remains immutable execution input; workflow/step ids, resolved references, lifecycle, and errors are explicit.
 - **Tests:** Resolution, invalid reference, lifecycle, serialization, and no-side-effect tests.
 - **Notes:** Must precede `WorkflowExecutor`; do not put execution methods on `Recipe`.
+
+### NAL-WF-005 — Implement Resource Resolver
+
+- **Status:** OPEN
+- **Phase:** 1B
+- **Goal:** Resolve declarative destination intent into one exact available Slot.
+- **Reference:** ADR 0007; Orca resource availability concepts
+- **Dependencies:** NAL-RES-008, NAL-RES-010, NAL-WF-001
+- **Acceptance Criteria:** Supports exact Slot, exact Station/auto Slot, and Station type/auto Station+Slot; policy and failures are deterministic and side-effect-free before reservation/execution.
+- **Tests:** Exact resolution, ordering, full/disabled resources, missing references, ambiguity rejection, and no-side-effect tests.
+- **Notes:** Phase 1A.1 implements only intent and sorted queries, not this resolver.
 
 ## Simulation
 

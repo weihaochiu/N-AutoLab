@@ -69,6 +69,22 @@ Application, workflow, configuration, simulation, and future GUI code must use
 location or station occupants independently. A rejected transition must not
 partially mutate state.
 
+## Rule 12 — Use explicit sample-holding slots
+
+Every Station that can hold a Sample exposes one or more explicit
+`StationSlot` resources, including single-position equipment.
+
+## Rule 13 — Sample location is always an exact Slot
+
+`Sample.current_location` stores a canonical Slot ID, never a parent Station ID
+or GUI shorthand. Parent Station identity is resolved through the Slot registry.
+
+## Rule 14 — Derive parent Station occupancy
+
+Parent Station capacity, occupancy, availability, and occupants are calculated
+from child Slot state. Station must not maintain a second mutable canonical
+occupancy list.
+
 ## Python and Project Style
 
 - Python 3.11 or newer.

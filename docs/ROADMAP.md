@@ -26,8 +26,23 @@ not authorize work in the next.
 - Add unit, integration, configuration, and architecture boundary tests.
 - Perform no workflow execution, simulation transport, GUI, or hardware access.
 
-### Phase 1B — Workflow State + Events + Simulation Transport
+### Phase 1A.1 — Station Instance + Slot Resource Hierarchy (Complete)
 
+- Establish `Lab → Station instance → StationSlot → Sample`.
+- Store canonical sample location and occupancy at exact Slot level.
+- Derive parent Station capacity and occupancy from child slots.
+- Support multiple same-type Stations, variable slot counts, deterministic
+  Station-type/Slot availability queries, and semantic Slot poses.
+- Migrate the demo to schema version 2 with two independent Hot Plates.
+- Define declarative exact-Slot, exact-Station, and Station-type destination
+  intent without resolving or executing it.
+- Perform no resource resolution, workflow execution, scheduling, simulation,
+  GUI, or hardware access.
+
+### Phase 1B — Resource Resolution + Workflow + Simulation
+
+- Resolve exactly one of: exact Slot, exact Station/auto Slot, or Station
+  type/auto Station+Slot using explicit deterministic policy.
 - Define resolved `Workflow` and step lifecycle state separately from `Recipe`.
 - Implement an event system and preflight validation.
 - Implement `SimulationTransporter` over an explicit station/transport model.

@@ -146,6 +146,23 @@ Phase 1A turns the previously recorded concepts into original N-AutoLab code:
 The new runtime dependency is only PyYAML for the portable demo configuration;
 none of the reference projects is installed as a dependency.
 
+## Phase 1A.1 Resource Hierarchy Realization
+
+Phase 1A.1 extends the original N-AutoLab implementation without copying source
+from either reference project:
+
+| N-AutoLab implementation | Reference concept | N-AutoLab decision |
+| --- | --- | --- |
+| `Station` → `StationSlot` | PyLabRobot parent/child Resource hierarchy and resource position abstraction | Model general station instances and exact sample-holding slots, not liquid-handling labware or deck classes. |
+| Slot `pose_reference` | PyLabRobot relative/resource position concept | Store semantic identifiers only; no third-party positioning code or real coordinates. |
+| `StationSlotRegistry` | Orca ResourceRegistry identity/lookup concept | Validate parent existence and unique station-local slot index with original small in-memory code. |
+| Multi-instance Station queries | Orca SystemMap/resource availability concepts | Deterministically list Stations by type and available Slots by Station/type; no graph, scheduler, reservation, or Orca implementation. |
+| Slot-level canonical state | N-AutoLab ADRs 0006–0007 | Store Sample location at exact Slot and derive parent Station aggregates without duplicate occupancy state. |
+
+The planned Phase 1B Resource Resolver will distinguish exact Slot, exact
+Station/auto Slot, and Station type/auto Station+Slot intent. Phase 1A.1 defines
+only the serializable intent and sorted read queries.
+
 ## License Boundary
 
 Architecture ideas and publicly documented behavior were studied. Implementations will be original N-AutoLab code unless a later dependency or source reuse decision records license compatibility, attribution, distribution obligations, and approval. Orca's AGPL-3.0-only implementation is specifically excluded from copying.

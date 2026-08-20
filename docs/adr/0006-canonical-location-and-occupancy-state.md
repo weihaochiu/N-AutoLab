@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted; refined by ADR 0007
 
 ## Context
 
@@ -12,10 +12,10 @@ divergence and unreliable capacity checks.
 
 ## Decision
 
-Expose `Sample.current_location` and `Station.occupant_ids` as read-only public
-views. `LabState.place_sample`, `remove_sample`, and `relocate_sample` are the
-canonical mutation API. They validate every expected failure before changing
-state, then update both views and sample history together.
+The atomic mutation principle remains authoritative. ADR 0007 refines the
+location target from parent Station to exact `StationSlot`: public views are
+`Sample.current_location` and `StationSlot.occupant_ids`; parent Station
+occupancy is derived.
 
 ## Consequences
 
@@ -29,3 +29,4 @@ concurrency and persistence transactions remain future decisions.
 - `ARCHITECTURE.md` §6
 - Orca registry/resource-orchestration concept (concept only; no copied code)
 - `docs/REFERENCE_ARCHITECTURE.md`
+- ADR 0007

@@ -1,6 +1,6 @@
 # N-AutoLab Architecture Contract
 
-Status: Accepted; Phase 1A implementation recorded
+Status: Accepted; Phase 1A.1 implementation recorded
 Scope: Mandatory direction for all implementation
 
 ## 1. Platform Boundary
@@ -139,32 +139,71 @@ ERROR
 
 ## 6. Resource and Station Contract
 
-N-AutoLab adapts hierarchical resource and deck concepts into its own `Resource`, `Station`, and `StationMap` model. It does not copy a liquid-handling deck model.
+N-AutoLab adapts hierarchical resource and deck concepts into its own model. It
+does not copy a liquid-handling deck taxonomy or implementation.
 
-Future `Station` specification:
+The official sample-holding hierarchy is:
+
+```text
+Lab
+ └── Station instance
+      └── StationSlot
+           └── Sample
+```
+
+`Station` is an identifiable physical/logical work-station instance such as
+`hotplate_01`. Its `station_type` remains independently queryable, so multiple
+instances such as `hotplate_01` and `hotplate_02` can coexist.
+
+`StationSlot` is an exact sample position such as
+`hotplate_02.slot_03`. It owns capacity, occupants, enabled state, capabilities,
+and the semantic pick/place `pose_reference`. Every station that can hold a
+sample exposes at least one explicit slot; single-position equipment has
+`slot_01` rather than a special case.
+
+Phase 1A.1 `Station` instance specification:
 
 ```text
 id
 display_name
 station_type
-capacity
-occupancy
 pose_reference
 capabilities
 enabled
 metadata
+device_id
+display_prefix
 ```
 
-Robot coordinates must not be distributed through workflow code. A station holds a `pose_reference`; backend- and site-specific configuration resolves that reference. Occupancy and capacity must be explicit and independently testable.
+Phase 1A.1 `StationSlot` specification:
+
+```text
+id
+display_name
+parent_station_id
+slot_index
+capacity
+occupant_ids
+pose_reference
+enabled
+capabilities
+metadata
+```
+
+Robot coordinates must not be distributed through workflow code. Slot
+`pose_reference` is the semantic sample pick/place reference; backend- and
+site-specific configuration will resolve it later. A parent Station may retain
+an optional service/calibration pose, but it is not a sample location pose.
 
 Phase 1A implements `StationRegistry`, `DeviceRegistry`, and `SampleRegistry` as
 deterministic in-memory collections. `StationMap` and `TransportGraph` remain
 deferred.
 
-### Canonical location and occupancy state
+### Canonical slot-level location and occupancy state
 
-`Sample.current_location` and `Station.occupant_ids` are two read-only public
-views of one logical relationship. `resources.LabState` owns the only supported
+`Sample.current_location` stores one exact canonical Slot ID. It never stores a
+parent Station ID. `Sample.current_location` and `StationSlot.occupant_ids` are
+two read-only public views of one relationship. `resources.LabState` owns the supported
 mutation operations:
 
 ```text
@@ -173,13 +212,29 @@ remove_sample
 relocate_sample
 ```
 
-Each operation resolves all resources and validates source agreement,
-destination enabled state, duplicate occupancy, and capacity before changing
-either object. A rejected operation must leave both views and sample history
-unchanged. Registries are owned instances, not process-global mutable state.
+Each operation resolves all resources and validates source agreement, parent
+Station enabled state, Slot enabled state, duplicate occupancy, and Slot
+capacity before changing either object. A rejected operation leaves both views
+and sample history unchanged.
 
-This is an in-memory domain transaction boundary, not a workflow executor,
-transporter, database transaction, or hardware command.
+Parent Station occupancy is never stored as a second mutable list. `LabState`
+derives total capacity, occupancy, available capacity, and aggregate occupant
+IDs from child slots. It also exposes deterministic read-only queries for
+available slots by exact Station or Station type. These queries do not reserve,
+schedule, resolve workflow intent, or mutate state.
+
+`StationRegistry.list_by_type()` orders Station instances by canonical ID;
+`StationSlotRegistry.list_by_station()` orders slots by `slot_index`.
+Registries are owned instances, not process-global mutable state.
+
+Device association is a separate relationship: a Station may reference zero or
+one primary `device_id`; architecture permits a Device to serve one or more
+Stations without adding a reverse-list graph in Phase 1A.1. Station, Slot, and
+Device identities are never interchangeable.
+
+This is an in-memory domain transaction boundary, not a resource resolver,
+workflow executor, transporter, scheduler, reservation, database transaction,
+or hardware command.
 
 ## 7. Sample Contract
 
@@ -209,6 +264,19 @@ The recipe engine must remain independent of editor representation. A table edit
 
 Workflows request `MoveSample`; they do not issue `robot.move_joint`, `robot.move_line`, or `gripper.open` commands.
 
+Phase 1A.1 represents MOVE_SAMPLE destinations as exactly one declarative
+intent:
+
+```text
+EXACT_SLOT      hotplate_02.slot_03
+EXACT_STATION   hotplate_02          (future auto-slot)
+STATION_TYPE    hotplate             (future auto-station + auto-slot)
+```
+
+Ambiguous combinations are invalid. This declaration does not perform resource
+resolution; Phase 1B will consume deterministic availability queries and define
+selection policy.
+
 ## 9. Events and Execution Visibility
 
 A future `EventBus` or `EventDispatcher` decouples workflow/device status publication from GUI presentation. It is not a hidden path for bypassing application or safety policy.
@@ -236,7 +304,7 @@ Whenever practical, simulation is implemented and tested before a real backend. 
 
 ## 11. Safety and Failure Contract
 
-- Phase 1A performs zero hardware access.
+- Phase 1A.1 performs zero hardware access.
 - Real commands require explicit real backends, capability checks, connection checks, and preflight.
 - Hardware and transport failures propagate as visible errors; they are not rewritten as success.
 - Abort and shutdown semantics must be device-aware and fail closed.
@@ -247,6 +315,7 @@ Whenever practical, simulation is implemented and tested before a real backend. 
 
 Major changes must update this document, [docs/REFERENCE_ARCHITECTURE.md](docs/REFERENCE_ARCHITECTURE.md), the relevant ADR, [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md), and [OPEN_ITEMS.md](OPEN_ITEMS.md). Third-party implementation cannot be copied without explicit license review.
 
-Phase 1A implements only pure domain models, in-memory registries, canonical
-resource-state transitions, and portable demo configuration. Workflow runtime,
-events, simulation transport, GUI, and all hardware access remain deferred.
+Phase 1A.1 adds only Station/Slot hierarchy, slot-level canonical state,
+deterministic availability queries, declarative destination intent, and portable
+demo configuration. Resource resolution, workflow runtime, events, simulation
+transport, scheduling, GUI, and all hardware access remain deferred.

@@ -2,7 +2,7 @@
 
 Modular Laboratory Automation and Experiment Orchestration Platform
 
-**Current Development Stage:** Phase 1A — Core Domain + Registry + Demo Lab Configuration
+**Current Development Stage:** Phase 1A.1 — Station Instance + Slot Resource Hierarchy
 
 **Hardware Execution:** Not implemented / disabled
 
@@ -34,6 +34,15 @@ Hardware
 
 High-level code depends on abstractions. Vendor SDKs remain behind backend implementations. The GUI displays state and accepts commands but does not own hardware, workflow, sample, station, or business logic. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
+The canonical sample-holding hierarchy is:
+
+```text
+Lab → Station instance → StationSlot → Sample
+```
+
+Devices remain a separate association and are never interchangeable with a
+Station or Slot.
+
 ## Reference Projects
 
 - [PyLabRobot](https://github.com/PyLabRobot/pylabrobot): device/backend separation, hierarchical resources, deck relationships, serialization, and hardware-independent development.
@@ -60,9 +69,11 @@ All Python code uses the `nautolab` package and a `src` layout.
 
 ## Development Status
 
-Phase 1A implements general-purpose `Sample`, `Station`, `Device`, `Action`,
-`Recipe`, and `RecipeStep` models; deterministic sample/station/device registries;
-canonical in-memory placement/relocation state; and a validated YAML demo lab.
+Phase 1A.1 extends the general-purpose models with explicit Station instances and
+sample-holding `StationSlot` resources. Sample location is always one exact Slot;
+parent Station occupancy/capacity are derived from child Slots. The schema v2
+demo includes two independent Hot Plates, variable slot counts, four Samples,
+and deterministic availability queries.
 
 It deliberately does **not** implement workflow execution, event delivery,
 simulation transport, hardware access, a real station map, recipe editors, or a
@@ -92,7 +103,7 @@ py -3.11 -m venv .venv
 run_windows.bat
 ```
 
-The launcher prints Phase 1A capability status only. It does not open a GUI or
+The launcher prints Phase 1A.1 capability status only. It does not open a GUI or
 contact hardware.
 
 To inspect the in-memory demo lab:
@@ -114,16 +125,17 @@ After setup:
 
 ## Roadmap
 
-Phase 1A is complete at the repository level. Phase 1B is planned to introduce
-resolved workflow state, events, preflight, `SimulationTransporter`, the
-workflow executor, and a simulation-only golden path. Phase 1C adds minimal
+Phase 1A.1 is complete at the repository level. Phase 1B is planned to introduce
+resource resolution, resolved workflow state, events, preflight,
+`SimulationTransporter`, the workflow executor, and a simulation-only golden
+path. Phase 1C adds minimal
 desktop visibility. Later phases add hardware one family at a time. See
 [docs/ROADMAP.md](docs/ROADMAP.md) and
 [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md).
 
 ## Safety
 
-Phase 1A has zero hardware access. No robot, gripper, serial port, TCP device,
+Phase 1A.1 has zero hardware access. No robot, gripper, serial port, TCP device,
 vendor DLL, camera, or spectrometer is opened. Future real hardware must use
 explicit backends, fail closed, expose truthful implementation and connection
 states, pass preflight, and have tests plus operator-visible status.
