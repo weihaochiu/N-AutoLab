@@ -26,7 +26,7 @@ def test_sample_accepts_open_ended_type_and_metadata() -> None:
 def test_sample_location_has_no_public_setter() -> None:
     sample = Sample(id="sample_001", name="Sample 001")
     with pytest.raises(AttributeError):
-        sample.current_location = "storage_s1"  # type: ignore[misc]
+        sample.current_location = "storage_01.slot_01"  # type: ignore[misc]
 
 
 def test_sample_rename_preserves_identity() -> None:

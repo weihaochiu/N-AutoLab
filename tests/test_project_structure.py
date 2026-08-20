@@ -38,6 +38,8 @@ def test_critical_documents_exist() -> None:
         "docs/adr/0003-workflow-resource-orchestration.md",
         "docs/adr/0004-gui-separated-from-core.md",
         "docs/adr/0005-simulation-before-real-hardware.md",
+        "docs/adr/0006-canonical-location-and-occupancy-state.md",
+        "docs/adr/0007-station-instance-and-slot-resource-hierarchy.md",
     ]
 
     for relative_path in required:

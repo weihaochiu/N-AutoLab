@@ -1,4 +1,4 @@
-"""Validation tests for malformed laboratory YAML."""
+"""Validation tests for malformed hierarchy configuration."""
 
 from pathlib import Path
 
@@ -8,6 +8,7 @@ import yaml
 from nautolab.core import (
     ConfigurationError,
     DuplicateResourceError,
+    DuplicateSlotIndexError,
     InvalidCapacityError,
     ResourceNotFoundError,
 )
@@ -22,14 +23,21 @@ def write_config(tmp_path: Path, data: object) -> Path:
 
 def base_config() -> dict[str, object]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "devices": [],
         "stations": [
             {
-                "id": "storage_s1",
-                "display_name": "Storage S1",
+                "id": "storage_01",
+                "display_name": "Storage 01",
                 "station_type": "storage",
-                "capacity": 1,
+                "slots": [
+                    {
+                        "index": 1,
+                        "id": "storage_01.slot_01",
+                        "display_name": "ST01-S01",
+                        "capacity": 1,
+                    }
+                ],
             }
         ],
         "samples": [],
@@ -43,20 +51,72 @@ def test_duplicate_station_id_is_rejected(tmp_path: Path) -> None:
         load_lab_config(write_config(tmp_path, data))
 
 
-def test_invalid_station_capacity_is_rejected(tmp_path: Path) -> None:
+def test_duplicate_slot_id_is_rejected(tmp_path: Path) -> None:
     data = base_config()
-    data["stations"][0]["capacity"] = -1  # type: ignore[index]
+    slots = data["stations"][0]["slots"]  # type: ignore[index]
+    slots.append(dict(slots[0]))
+    with pytest.raises(DuplicateResourceError):
+        load_lab_config(write_config(tmp_path, data))
+
+
+def test_duplicate_slot_index_is_rejected(tmp_path: Path) -> None:
+    data = base_config()
+    data["stations"][0]["slots"].append(  # type: ignore[index]
+        {"index": 1, "id": "storage_01.slot_001", "display_name": "duplicate index"}
+    )
+    with pytest.raises(DuplicateSlotIndexError):
+        load_lab_config(write_config(tmp_path, data))
+
+
+def test_missing_slot_parent_is_rejected(tmp_path: Path) -> None:
+    data = base_config()
+    slot = data["stations"][0]["slots"][0]  # type: ignore[index]
+    slot["parent_station_id"] = "storage_99"
+    slot["id"] = "storage_99.slot_01"
+    with pytest.raises(ResourceNotFoundError, match="station"):
+        load_lab_config(write_config(tmp_path, data))
+
+
+@pytest.mark.parametrize("capacity", [-1, True, 1.5])
+def test_invalid_slot_capacity_is_rejected(tmp_path: Path, capacity: object) -> None:
+    data = base_config()
+    data["stations"][0]["slots"][0]["capacity"] = capacity  # type: ignore[index]
     with pytest.raises(InvalidCapacityError):
         load_lab_config(write_config(tmp_path, data))
 
 
-def test_missing_initial_station_reference_is_rejected(tmp_path: Path) -> None:
+def test_sample_location_cannot_reference_parent_station(tmp_path: Path) -> None:
     data = base_config()
     data["samples"] = [
-        {"id": "sample_001", "name": "Sample", "initial_location": "missing_station"}
+        {"id": "sample_001", "name": "Sample", "initial_location": "storage_01"}
     ]
-    with pytest.raises(ResourceNotFoundError, match="station"):
+    with pytest.raises(ConfigurationError, match="exact slot"):
         load_lab_config(write_config(tmp_path, data))
+
+
+def test_sample_missing_slot_reference_is_rejected(tmp_path: Path) -> None:
+    data = base_config()
+    data["samples"] = [
+        {
+            "id": "sample_001",
+            "name": "Sample",
+            "initial_location": "storage_01.slot_99",
+        }
+    ]
+    with pytest.raises(ResourceNotFoundError, match="station slot"):
+        load_lab_config(write_config(tmp_path, data))
+
+
+@pytest.mark.parametrize(("station_enabled", "slot_enabled"), [(False, True), (True, False)])
+def test_disabled_parent_or_slot_loads_when_unoccupied(
+    tmp_path: Path, station_enabled: bool, slot_enabled: bool
+) -> None:
+    data = base_config()
+    data["stations"][0]["enabled"] = station_enabled  # type: ignore[index]
+    data["stations"][0]["slots"][0]["enabled"] = slot_enabled  # type: ignore[index]
+    state = load_lab_config(write_config(tmp_path, data))
+    assert state.stations.get("storage_01").enabled is station_enabled
+    assert state.slots.get("storage_01.slot_01").enabled is slot_enabled
 
 
 def test_missing_station_device_reference_is_rejected(tmp_path: Path) -> None:
@@ -80,13 +140,17 @@ def test_invalid_device_state_is_configuration_error(tmp_path: Path) -> None:
         load_lab_config(write_config(tmp_path, data))
 
 
-def test_wrong_schema_version_is_rejected(tmp_path: Path) -> None:
+def test_station_without_slots_is_rejected(tmp_path: Path) -> None:
     data = base_config()
-    data["schema_version"] = 99
-    with pytest.raises(ConfigurationError, match="schema_version"):
+    data["stations"][0]["slots"] = []  # type: ignore[index]
+    with pytest.raises(ConfigurationError, match="at least one slot"):
         load_lab_config(write_config(tmp_path, data))
 
 
-def test_yaml_root_must_be_mapping(tmp_path: Path) -> None:
+def test_wrong_schema_version_and_non_mapping_root_are_rejected(tmp_path: Path) -> None:
+    data = base_config()
+    data["schema_version"] = 1
+    with pytest.raises(ConfigurationError, match="schema_version"):
+        load_lab_config(write_config(tmp_path, data))
     with pytest.raises(ConfigurationError, match="root"):
         load_lab_config(write_config(tmp_path, ["not", "a", "mapping"]))

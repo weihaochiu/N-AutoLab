@@ -1,4 +1,4 @@
-"""Architecture guardrails for the Phase 1A scope."""
+"""Architecture guardrails for the Phase 1A.1 scope."""
 
 import ast
 from pathlib import Path
@@ -46,7 +46,28 @@ def test_core_has_no_material_specific_class_names() -> None:
     assert all(name not in core_text for name in forbidden)
 
 
-def test_phase_1a_does_not_implement_deferred_runtime_classes() -> None:
-    deferred = ("WorkflowExecutor", "EventBus", "SimulationTransporter")
+def test_phase_1a_1_does_not_implement_deferred_runtime_classes() -> None:
+    deferred = (
+        "WorkflowExecutor",
+        "EventBus",
+        "SimulationTransporter",
+        "ResourceResolver",
+        "ReservationManager",
+    )
     source_text = "\n".join(path.read_text(encoding="utf-8") for path in SOURCE_ROOT.rglob("*.py"))
     assert all(name not in source_text for name in deferred)
+
+
+def test_parent_station_has_no_mutable_occupancy_state() -> None:
+    station_source = (SOURCE_ROOT / "core" / "station.py").read_text(encoding="utf-8")
+    assert "_occupant_ids" not in station_source
+    assert "_add_occupant" not in station_source
+
+
+def test_core_does_not_encode_gui_station_abbreviations() -> None:
+    core_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in (SOURCE_ROOT / "core").glob("*.py")
+    )
+    assert "HP01" not in core_text
+    assert "SC01" not in core_text
+    assert "ST01" not in core_text
