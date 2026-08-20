@@ -1,21 +1,9 @@
 @echo off
 setlocal
-title N-AutoLab Phase 1A.1
-
-echo N-AutoLab
-echo Phase 1A.1 -- Station Instance + Slot Resource Hierarchy
-echo.
-echo Status:
-echo Core domain: Implemented
-echo Resource registries: Implemented
-echo Station instances and slots: Implemented
-echo Slot-level canonical state: Implemented
-echo Multi-device demo lab: Implemented
-echo Workflow execution: Not implemented
-echo Resource Resolver: Not implemented
-echo Simulation: Not implemented
-echo Runtime GUI: Not implemented
-echo Hardware access: Disabled
-echo Next phase: Resource Resolution + Workflow + Simulation
-echo.
-pause
+title N-AutoLab Phase 1 — SIMULATION
+if not exist ".venv\Scripts\python.exe" (
+  echo Missing .venv. Run setup_windows.bat first.
+  exit /b 1
+)
+set QT_API=pyside6
+".venv\Scripts\python.exe" -m nautolab.gui

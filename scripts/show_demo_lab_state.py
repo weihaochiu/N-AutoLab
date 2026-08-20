@@ -1,4 +1,4 @@
-"""Print the Phase 1A demo configuration without accessing hardware."""
+"""Print the Phase 1 demo configuration without accessing hardware."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ def main() -> None:
     state = load_lab_config(repository_root / "config" / "demo_lab.yaml")
 
     print("N-AutoLab")
-    print("Phase 1A.1 -- Station Instance + Slot Resource Hierarchy")
+    print("Phase 1 -- Core + Simulation Qt GUI")
     print()
     print("Stations:")
     for station in state.stations.list_all():
@@ -36,7 +36,8 @@ def main() -> None:
     for sample in state.samples.list_all():
         print(f"  {sample.id}: slot={sample.current_location}, status={sample.status.value}")
     print()
-    print("Runtime GUI: Not implemented")
+    print("Runtime GUI: IMPLEMENTED (run_windows.bat)")
+    print("Simulation workflow: IMPLEMENTED")
     print("Hardware access: Disabled")
     print("No workflow was executed.")
 
