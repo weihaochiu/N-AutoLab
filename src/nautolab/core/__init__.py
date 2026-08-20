@@ -33,6 +33,7 @@ from .errors import (
     InvalidWorkflowTransitionError,
     PreflightError,
     SimulationTransportError,
+    SimulationAbortRequested,
     SlotDisabledError,
 )
 from .recipe import Recipe, RecipeStep
@@ -79,4 +80,5 @@ __all__ = [
     "InvalidWorkflowTransitionError",
     "PreflightError",
     "SimulationTransportError",
+    "SimulationAbortRequested",
 ]

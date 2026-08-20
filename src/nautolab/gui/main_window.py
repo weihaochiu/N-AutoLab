@@ -22,12 +22,12 @@ class SimulationWorker(QThread):
     succeeded = Signal()
     failed = Signal(str)
 
-    def __init__(self, application: LabApplication) -> None:
-        super().__init__(); self.application = application
+    def __init__(self, application: LabApplication, speed: str) -> None:
+        super().__init__(); self.application = application; self.speed = speed
 
     def run(self) -> None:
         try:
-            self.application.run_simulation()
+            self.application.run_simulation(self.speed)
         except Exception as exc:
             self.failed.emit(str(exc))
         else:
@@ -105,7 +105,7 @@ class RecipePage(QWidget):
     def __init__(self, application: LabApplication, validated_callback) -> None:
         super().__init__(); self.application = application; self.validated_callback = validated_callback
         layout = QVBoxLayout(self)
-        header = QHBoxLayout(); header.addWidget(QLabel("Recipe Table Editor (view only; Recipe model is canonical)")); header.addStretch()
+        header = QHBoxLayout(); header.addWidget(QLabel("Recipe Table Editor — Recipe model is canonical; this table is one editable representation.")); header.addStretch()
         for label, callback in (("Add Step", self.add_row), ("Remove Step", self.remove_row), ("Templates", self.templates), ("Validate", self.validate)):
             button = QPushButton(label); button.clicked.connect(callback); header.addWidget(button)
         layout.addLayout(header)
@@ -121,13 +121,13 @@ class RecipePage(QWidget):
             destination = ""
             if action.destination:
                 destination = action.destination.exact_slot_id or action.destination.exact_station_id or action.destination.station_type or ""
-            values = (str(step.order), "Yes" if step.enabled else "No", action.action_type.value, action.sample_id or "", action.source_slot_id or "", mode, destination, str(action.parameters.get("duration_seconds", 0)), step.description)
+            values = (str(step.order), "Yes" if step.enabled else "No", action.action_type.value, action.sample_id or "", action.source_slot_id or "AUTO", mode, destination, str(action.parameters.get("duration_seconds", 0)), step.description)
             for col, value in enumerate(values): self.table.setItem(row, col, QTableWidgetItem(value))
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
     def add_row(self) -> None:
         row = self.table.rowCount(); self.table.insertRow(row)
-        defaults = (str(row + 1), "Yes", "MOVE_SAMPLE", "sample_001", "", "STATION_TYPE", "hotplate", "0", "")
+        defaults = (str(row + 1), "Yes", "MOVE_SAMPLE", "sample_001", "AUTO", "STATION_TYPE", "hotplate", "0", "")
         for col, value in enumerate(defaults): self.table.setItem(row, col, QTableWidgetItem(value))
 
     def remove_row(self) -> None:
@@ -149,7 +149,9 @@ class RecipePage(QWidget):
                     "STATION_TYPE": lambda: MoveDestination(station_type=value),
                 }[mode]()
             parameters = {"duration_seconds": float(self._text(row, 7) or 0)}
-            action = Action(f"gui_action_{row + 1:03d}", action_type, self._text(row, 3) or None, self._text(row, 4) or None, destination, parameters)
+            source_text = self._text(row, 4)
+            source = None if source_text.upper() in {"", "AUTO"} else source_text
+            action = Action(f"gui_action_{row + 1:03d}", action_type, self._text(row, 3) or None, source, destination, parameters)
             steps.append(RecipeStep(f"gui_step_{row + 1:03d}", row + 1, action, self._text(row, 1).lower() not in {"no", "false", "0"}, self._text(row, 8)))
         return Recipe("gui_recipe", "GUI Recipe", steps)
 
@@ -191,6 +193,7 @@ class WorkflowPage(QWidget):
     def __init__(self, application: LabApplication) -> None:
         super().__init__(); self.application = application; layout = QVBoxLayout(self)
         controls = QHBoxLayout(); self.summary = QLabel("No workflow validated"); controls.addWidget(self.summary); controls.addStretch()
+        controls.addWidget(QLabel("Simulation Speed")); self.speed = QComboBox(); self.speed.addItems(["Instant", "20×", "10×", "5×", "1×"]); self.speed.setCurrentText("10×"); controls.addWidget(self.speed)
         self.run_button = QPushButton("Run Simulation"); self.pause_button = QPushButton("Pause"); self.resume_button = QPushButton("Resume"); self.abort_button = QPushButton("Abort"); self.reset_button = QPushButton("Reset (NOT IMPLEMENTED)"); self.reset_button.setEnabled(False)
         for button, signal in ((self.run_button, self.run_requested), (self.pause_button, self.pause_requested), (self.resume_button, self.resume_requested), (self.abort_button, self.abort_requested)):
             button.clicked.connect(signal.emit); controls.addWidget(button)
@@ -214,6 +217,7 @@ class WorkflowPage(QWidget):
         self.pause_button.setEnabled(status is WorkflowStatus.RUNNING)
         self.resume_button.setEnabled(status is WorkflowStatus.PAUSED)
         self.abort_button.setEnabled(status in {WorkflowStatus.READY, WorkflowStatus.RUNNING, WorkflowStatus.PAUSED})
+        self.speed.setEnabled(status in {WorkflowStatus.READY, WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.ABORTED})
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
 
@@ -281,7 +285,7 @@ class MainWindow(QMainWindow):
 
     def run_simulation(self) -> None:
         if self.worker and self.worker.isRunning(): return
-        self.worker = SimulationWorker(self.application); self.worker.succeeded.connect(self.refresh_all); self.worker.failed.connect(self._show_error); self.worker.start()
+        self.worker = SimulationWorker(self.application, self.workflow.speed.currentText()); self.worker.succeeded.connect(self.refresh_all); self.worker.failed.connect(self._show_error); self.worker.start()
 
     def _pause(self) -> None: self._command(self.application.pause)
     def _resume(self) -> None: self._command(self.application.resume)

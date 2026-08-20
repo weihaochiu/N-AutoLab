@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from time import monotonic, sleep
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -20,6 +21,25 @@ def _window() -> tuple[QApplication, MainWindow]:
     window = MainWindow(LabApplication.load_demo(ROOT / "config" / "demo_lab.yaml"))
     window.show(); qt.processEvents()
     return qt, window
+
+
+def _wait_until(qt: QApplication, predicate, timeout: float = 2.0) -> bool:
+    deadline = monotonic() + timeout
+    while monotonic() < deadline:
+        qt.processEvents()
+        if predicate(): return True
+        sleep(0.01)
+    return False
+
+
+def _displayed_sample_location(window: MainWindow, sample_id: str) -> str | None:
+    for station_index in range(window.station_map.tree.topLevelItemCount()):
+        station = window.station_map.tree.topLevelItem(station_index)
+        for slot_index in range(station.childCount()):
+            slot = station.child(slot_index)
+            if sample_id in slot.text(3).split(", "):
+                return slot.text(1)
+    return None
 
 
 def test_main_window_smoke_and_page_navigation() -> None:
@@ -76,3 +96,47 @@ def test_close_unsubscribes_and_late_event_is_harmless() -> None:
     window.application.events.publish(Event(message="late event after close"))
     qt.processEvents()
     assert not window.isVisible()
+
+
+def test_golden_template_auto_source_round_trip_and_speed_choices() -> None:
+    _qt, window = _window()
+    assert [window.recipe.table.item(row, 4).text() for row in range(4)] == ["AUTO"] * 4
+    assert all(step.action.source_slot_id is None for step in window.recipe.to_recipe().steps)
+    assert [window.workflow.speed.itemText(index) for index in range(window.workflow.speed.count())] == [
+        "Instant", "20×", "10×", "5×", "1×",
+    ]
+    assert window.workflow.speed.currentText() == "10×"
+    window.close()
+
+
+def test_visible_playback_updates_running_station_map_and_logs_incrementally() -> None:
+    qt, window = _window()
+    for row in range(window.recipe.table.rowCount()): window.recipe.table.item(row, 7).setText("2")
+    window.recipe.validate(); window.workflow.speed.setCurrentText("20×")
+    observed_locations = {_displayed_sample_location(window, "sample_001")}
+    observed_log_counts = {len(window.application.events.events)}
+    window.run_simulation()
+    running_seen = False
+    deadline = monotonic() + 3
+    while monotonic() < deadline and window.worker and window.worker.isRunning():
+        qt.processEvents(); running_seen |= "RUNNING" in window.workflow.summary.text()
+        observed_locations.add(_displayed_sample_location(window, "sample_001"))
+        observed_log_counts.add(len(window.application.events.events)); sleep(0.01)
+    assert window.worker is not None; window.worker.wait(1000); qt.processEvents()
+    observed_locations.add(_displayed_sample_location(window, "sample_001"))
+    assert running_seen
+    assert {"storage_01.slot_01", "hotplate_01.slot_03", "spin_coater_01.slot_01"} <= observed_locations
+    assert len(observed_log_counts) >= 3
+    assert "WorkflowCompleted" in window.logs.text.toPlainText()
+    window.close()
+
+
+def test_gui_close_aborts_visible_playback_promptly() -> None:
+    qt, window = _window()
+    for row in range(window.recipe.table.rowCount()): window.recipe.table.item(row, 7).setText("5")
+    window.recipe.validate(); window.workflow.speed.setCurrentText("1×"); window.run_simulation()
+    assert _wait_until(qt, lambda: window.application.current_workflow.status.value == "RUNNING")
+    before = monotonic(); window.close(); qt.processEvents()
+    assert monotonic() - before < 1
+    assert window.worker is not None and not window.worker.isRunning()
+    assert window.application.current_workflow.status.value == "ABORTED"

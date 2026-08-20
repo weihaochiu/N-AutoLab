@@ -11,7 +11,7 @@ from nautolab.core import (
 )
 from nautolab.resources import LabState, load_lab_config
 from nautolab.safety import PreflightReport, PreflightService
-from nautolab.simulation import SimulationTransporter
+from nautolab.simulation import SimulationPlayback, SimulationTransporter
 from nautolab.workflow import EventBus, Workflow, WorkflowExecutor
 
 from .models import (
@@ -29,17 +29,17 @@ class RecipeService:
 
     @staticmethod
     def golden_path_recipe() -> Recipe:
-        routes = (
-            ("storage_01.slot_01", MoveDestination(station_type="hotplate")),
-            ("hotplate_01.slot_03", MoveDestination(station_type="spin_coater")),
-            ("spin_coater_01.slot_01", MoveDestination(station_type="hotplate")),
-            ("hotplate_01.slot_03", MoveDestination(exact_slot_id="storage_01.slot_01")),
+        destinations = (
+            MoveDestination(station_type="hotplate"),
+            MoveDestination(station_type="spin_coater"),
+            MoveDestination(station_type="hotplate"),
+            MoveDestination(exact_slot_id="storage_01.slot_01"),
         )
         return Recipe("golden_path", "Golden Path", tuple(
             RecipeStep(f"step_{index:02d}", index, Action(
-                f"move_{index:02d}", ActionType.MOVE_SAMPLE, "sample_001", source, destination,
+                f"move_{index:02d}", ActionType.MOVE_SAMPLE, "sample_001", None, destination,
                 parameters={"duration_seconds": 30},
-            )) for index, (source, destination) in enumerate(routes, 1)
+            )) for index, destination in enumerate(destinations, 1)
         ))
 
     def set_current(self, recipe: Recipe) -> None:
@@ -87,12 +87,15 @@ class LabApplication:
             self.current_workflow.transition(WorkflowStatus.READY)
         return self.last_preflight
 
-    def run_simulation(self) -> Workflow:
+    def run_simulation(self, speed: str = "Instant") -> Workflow:
         if self.current_workflow is None or self.current_workflow.status is not WorkflowStatus.READY:
             report = self.validate_recipe()
             if not report.passed or self.current_workflow is None:
                 raise RuntimeError(report.format())
-        self._executor = WorkflowExecutor(SimulationTransporter(self.lab, self.events), self.events)
+        playback = SimulationPlayback.from_label(speed)
+        self._executor = WorkflowExecutor(
+            SimulationTransporter(self.lab, self.events, playback=playback), self.events
+        )
         return self._executor.run(self.current_workflow)
 
     def pause(self) -> None:

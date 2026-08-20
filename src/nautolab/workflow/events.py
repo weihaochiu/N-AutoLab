@@ -27,6 +27,8 @@ class WorkflowFailed(Event):
     """A workflow stopped on a visible failure."""
 class WorkflowPaused(Event):
     """A workflow paused at a safe step boundary."""
+class WorkflowPauseRequested(Event):
+    """An operator requested boundary-safe pause during a running step."""
 class WorkflowResumed(Event):
     """A paused workflow resumed."""
 class WorkflowAborted(Event):

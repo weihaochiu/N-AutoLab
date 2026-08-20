@@ -75,3 +75,7 @@ class PreflightError(NautolabError):
 
 class SimulationTransportError(NautolabError):
     """Raised when a simulated transfer cannot preserve canonical state."""
+
+
+class SimulationAbortRequested(NautolabError):
+    """Internal control signal for interruptible simulation-only playback."""

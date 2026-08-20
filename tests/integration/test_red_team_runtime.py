@@ -89,6 +89,24 @@ def test_pause_requested_after_first_move_takes_effect_at_next_boundary() -> Non
     assert workflow.status is WorkflowStatus.COMPLETED
 
 
+def test_intermediate_station_disabled_after_pause_fails_on_resume() -> None:
+    lab, events, workflow = _ready_golden()
+    base = SimulationTransporter(lab, events); executor = WorkflowExecutor(base, events)
+    original = base.move_sample; calls = 0
+    def move(*args, **kwargs):
+        nonlocal calls
+        original(*args, **kwargs); calls += 1
+        if calls == 1: executor.request_pause(workflow)
+    base.move_sample = move
+    executor.run(workflow)
+    assert workflow.status is WorkflowStatus.PAUSED
+    current = lab.samples.get("sample_001").current_location; assert current
+    lab.stations.get(lab.slots.get(current).parent_station_id).enabled = False
+    executor.resume(workflow)
+    assert workflow.status is WorkflowStatus.FAILED
+    assert "source station" in (workflow.error or "")
+
+
 def test_duplicate_observer_event_cannot_change_business_state() -> None:
     lab = load_lab_config(ROOT / "config" / "demo_lab.yaml")
     before = lab.samples.get("sample_001").current_location
