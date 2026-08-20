@@ -43,6 +43,15 @@ Before every push:
 5. push without force;
 6. fetch or query the remote and verify its SHA.
 
-## Future Automation
+## Automated Pre-Push Gate
 
-A pre-push safety gate and exact-commit backup automation are tracked in `NAL-INFRA-001`. Phase 0 specifies the behavior but intentionally does not add a complex backup framework. Future automation must be recoverable, testable, exclude local/secret/vendor artifacts, and never bypass normal Git review.
+`NAL-INFRA-001` is implemented by tracked `.githooks/pre-push`,
+`scripts/backup_commit.py`, and `scripts/install_git_hooks.py`. Installation sets
+`core.hooksPath=.githooks`. Every normal push first archives `HEAD` with
+`git archive`, so dirty or ignored working-tree data cannot enter the ZIP.
+
+The script verifies ZIP CRC and the complete tracked-file list before publishing
+the archive, then retains the newest ten `BACKUP/N-AutoLab_*.zip` files. Cleanup
+only begins after the new archive passes verification. Archive, verification,
+or retention failure exits nonzero and blocks the push. Tests also extract a
+backup to prove that its committed files are restorable.
