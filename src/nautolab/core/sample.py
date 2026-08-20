@@ -38,7 +38,7 @@ class Sample:
     """A material-agnostic laboratory sample.
 
     ``current_location`` is read-only to callers. The resource layer updates it
-    together with station occupancy through ``LabState`` operations.
+    together with exact-slot occupancy through ``LabState`` operations.
     """
 
     id: str
@@ -59,7 +59,7 @@ class Sample:
 
     @property
     def current_location(self) -> str | None:
-        """Return the canonical station identifier, or ``None`` when unplaced."""
+        """Return the canonical slot identifier, or ``None`` when unplaced."""
         return self._current_location
 
     @property

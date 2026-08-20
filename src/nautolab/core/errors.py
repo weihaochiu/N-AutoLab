@@ -18,19 +18,27 @@ class ResourceNotFoundError(NautolabError):
 
 
 class InvalidCapacityError(NautolabError):
-    """Raised when a station capacity is not a non-negative integer."""
+    """Raised when a sample-holding resource capacity is invalid."""
+
+
+class DuplicateSlotIndexError(NautolabError):
+    """Raised when one station has more than one slot with the same index."""
 
 
 class StationOccupiedError(NautolabError):
-    """Raised when a station cannot accept another sample."""
+    """Raised when a slot cannot accept another sample."""
 
 
 class StationDisabledError(NautolabError):
     """Raised when placement is requested at a disabled station."""
 
 
+class SlotDisabledError(NautolabError):
+    """Raised when placement is requested at a disabled station slot."""
+
+
 class LocationMismatchError(NautolabError):
-    """Raised when sample location and station occupancy do not agree."""
+    """Raised when sample location and exact-slot occupancy do not agree."""
 
 
 class InvalidActionError(NautolabError):

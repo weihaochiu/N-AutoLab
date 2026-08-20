@@ -7,13 +7,13 @@ from typing import Any
 
 import yaml
 
-from nautolab.core import ConfigurationError, Device, Sample, Station
+from nautolab.core import ConfigurationError, Device, Sample, Station, StationSlot
 
 from .lab_state import LabState
 
 
 def load_lab_config(path: Path) -> LabState:
-    """Load and validate a Phase 1A laboratory configuration file."""
+    """Load and validate a Phase 1A.1 slot-hierarchy configuration file."""
     config_path = Path(path)
     try:
         with config_path.open("r", encoding="utf-8") as stream:
@@ -24,8 +24,8 @@ def load_lab_config(path: Path) -> LabState:
         raise ConfigurationError(f"invalid YAML in {config_path}: {exc}") from exc
 
     root = _require_mapping(document, "configuration root")
-    if root.get("schema_version") != 1:
-        raise ConfigurationError("schema_version must be 1")
+    if root.get("schema_version") != 2:
+        raise ConfigurationError("schema_version must be 2")
 
     state = LabState()
     try:
@@ -48,16 +48,42 @@ def load_lab_config(path: Path) -> LabState:
                 id=_required(data, "id", "station"),
                 display_name=_required(data, "display_name", "station"),
                 station_type=_required(data, "station_type", "station"),
-                capacity=_required(data, "capacity", "station"),
                 pose_reference=data.get("pose_reference"),
                 capabilities=tuple(data.get("capabilities", [])),
                 enabled=data.get("enabled", True),
                 metadata=_optional_mapping(data.get("metadata"), "station metadata"),
                 device_id=data.get("device_id"),
+                display_prefix=data.get("display_prefix"),
             )
             if station.device_id is not None:
                 state.devices.get(station.device_id)
             state.stations.add(station)
+
+            slot_data = _require_mapping_list(data.get("slots", []), f"station {station.id} slots")
+            if not slot_data:
+                raise ConfigurationError(
+                    f"sample-holding station {station.id!r} must define at least one slot"
+                )
+            for entry in slot_data:
+                slot_index = _required(entry, "index", f"station {station.id} slot")
+                parent_station_id = entry.get("parent_station_id", station.id)
+                state.slots.add(
+                    StationSlot(
+                        id=_required(entry, "id", f"station {station.id} slot"),
+                        display_name=_required(
+                            entry, "display_name", f"station {station.id} slot"
+                        ),
+                        parent_station_id=parent_station_id,
+                        slot_index=slot_index,
+                        capacity=entry.get("capacity", 1),
+                        pose_reference=entry.get("pose_reference"),
+                        enabled=entry.get("enabled", True),
+                        capabilities=tuple(entry.get("capabilities", [])),
+                        metadata=_optional_mapping(
+                            entry.get("metadata"), f"station {station.id} slot metadata"
+                        ),
+                    )
+                )
 
         pending_placements: list[tuple[str, str]] = []
         for data in _require_mapping_list(root.get("samples", []), "samples"):
@@ -70,10 +96,16 @@ def load_lab_config(path: Path) -> LabState:
             )
             state.samples.add(sample)
             if data.get("initial_location") is not None:
-                pending_placements.append((sample.id, data["initial_location"]))
+                initial_location = data["initial_location"]
+                if state.stations.contains(initial_location):
+                    raise ConfigurationError(
+                        f"sample {sample.id!r} initial_location must reference an exact "
+                        f"slot, not station {initial_location!r}"
+                    )
+                pending_placements.append((sample.id, initial_location))
 
-        for sample_id, station_id in pending_placements:
-            state.place_sample(sample_id, station_id, note="Loaded from lab configuration")
+        for sample_id, slot_id in pending_placements:
+            state.place_sample(sample_id, slot_id, note="Loaded from lab configuration")
     except ConfigurationError:
         raise
     except (TypeError, ValueError) as exc:

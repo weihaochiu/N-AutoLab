@@ -1,74 +1,183 @@
-schema_version: 1
+schema_version: 2
 lab:
   id: demo_lab
   display_name: N-AutoLab Demo Laboratory
 
 devices:
-  - id: robot
+  - id: robot_device_01
     display_name: Demo Transport Robot
     device_type: robot
     implementation_state: NOT_IMPLEMENTED
     connection_state: DISCONNECTED
     capabilities: [move_sample]
-  - id: hotplate_01
-    display_name: Demo Hot Plate
+  - id: hotplate_device_01
+    display_name: Demo Hot Plate Controller 01
     device_type: hot_plate
     implementation_state: NOT_IMPLEMENTED
     connection_state: DISCONNECTED
     capabilities: [heat]
-  - id: spin_coater_01
-    display_name: Demo Spin Coater
+  - id: hotplate_device_02
+    display_name: Demo Hot Plate Controller 02
+    device_type: hot_plate
+    implementation_state: NOT_IMPLEMENTED
+    connection_state: DISCONNECTED
+    capabilities: [heat]
+  - id: spin_coater_device_01
+    display_name: Demo Spin Coater Controller 01
     device_type: spin_coater
     implementation_state: NOT_IMPLEMENTED
     connection_state: DISCONNECTED
     capabilities: [spin]
-  - id: spectrometer_01
-    display_name: Demo Spectrometer
+  - id: spectrometer_device_01
+    display_name: Demo Spectrometer Controller 01
     device_type: spectrometer
     implementation_state: NOT_IMPLEMENTED
     connection_state: DISCONNECTED
     capabilities: [acquire_spectrum]
-  - id: d405_01
-    display_name: Demo D405 Camera
+  - id: d405_device_01
+    display_name: Demo D405 Camera 01
     device_type: camera
     implementation_state: NOT_IMPLEMENTED
     connection_state: DISCONNECTED
     capabilities: [capture_image, vision_locate]
 
 stations:
-  - id: storage_s1
-    display_name: Storage S1
+  - id: storage_01
+    display_name: Storage 01
     station_type: storage
-    capacity: 1
-    pose_reference: storage_s1_pose
+    display_prefix: ST01
+    enabled: true
     capabilities: [store_sample]
-  - id: hotplate
-    display_name: Hot Plate Station
-    station_type: heating
-    capacity: 1
-    pose_reference: hotplate_pose
+    slots:
+      - index: 1
+        id: storage_01.slot_01
+        display_name: ST01-S01
+        capacity: 1
+        pose_reference: storage_01_slot_01
+        capabilities: [robot_accessible]
+      - index: 2
+        id: storage_01.slot_02
+        display_name: ST01-S02
+        capacity: 1
+        pose_reference: storage_01_slot_02
+        capabilities: [robot_accessible]
+      - index: 3
+        id: storage_01.slot_03
+        display_name: ST01-S03
+        capacity: 1
+        pose_reference: storage_01_slot_03
+        capabilities: [robot_accessible]
+      - index: 4
+        id: storage_01.slot_04
+        display_name: ST01-S04
+        capacity: 1
+        pose_reference: storage_01_slot_04
+        capabilities: [robot_accessible]
+
+  - id: hotplate_01
+    display_name: Hot Plate 01
+    station_type: hotplate
+    display_prefix: HP01
+    device_id: hotplate_device_01
+    enabled: true
     capabilities: [heat]
-    device_id: hotplate_01
-  - id: spin_coater
-    display_name: Spin Coater Station
-    station_type: coating
-    capacity: 1
-    pose_reference: spin_coater_pose
+    slots:
+      - index: 1
+        id: hotplate_01.slot_01
+        display_name: HP01-S01
+        capacity: 1
+        pose_reference: hotplate_01_slot_01
+        capabilities: [heated_position, robot_accessible]
+      - index: 2
+        id: hotplate_01.slot_02
+        display_name: HP01-S02
+        capacity: 1
+        pose_reference: hotplate_01_slot_02
+        capabilities: [heated_position, robot_accessible]
+      - index: 3
+        id: hotplate_01.slot_03
+        display_name: HP01-S03
+        capacity: 1
+        pose_reference: hotplate_01_slot_03
+        capabilities: [heated_position, robot_accessible]
+
+  - id: hotplate_02
+    display_name: Hot Plate 02
+    station_type: hotplate
+    display_prefix: HP02
+    device_id: hotplate_device_02
+    enabled: true
+    capabilities: [heat]
+    slots:
+      - index: 1
+        id: hotplate_02.slot_01
+        display_name: HP02-S01
+        capacity: 1
+        pose_reference: hotplate_02_slot_01
+        capabilities: [heated_position, robot_accessible]
+      - index: 2
+        id: hotplate_02.slot_02
+        display_name: HP02-S02
+        capacity: 1
+        pose_reference: hotplate_02_slot_02
+        capabilities: [heated_position, robot_accessible]
+      - index: 3
+        id: hotplate_02.slot_03
+        display_name: HP02-S03
+        capacity: 1
+        pose_reference: hotplate_02_slot_03
+        capabilities: [heated_position, robot_accessible]
+
+  - id: spin_coater_01
+    display_name: Spin Coater 01
+    station_type: spin_coater
+    display_prefix: SC01
+    device_id: spin_coater_device_01
+    enabled: true
     capabilities: [spin]
-    device_id: spin_coater_01
-  - id: spectrometer
-    display_name: Spectrometer Station
-    station_type: measurement
-    capacity: 1
-    pose_reference: spectrometer_pose
+    slots:
+      - index: 1
+        id: spin_coater_01.slot_01
+        display_name: SC01-S01
+        capacity: 1
+        pose_reference: spin_coater_01_slot_01
+        capabilities: [coating_position, robot_accessible]
+
+  - id: spectrometer_01
+    display_name: Spectrometer 01
+    station_type: spectrometer
+    display_prefix: SP01
+    device_id: spectrometer_device_01
+    enabled: true
     capabilities: [acquire_spectrum]
-    device_id: spectrometer_01
+    slots:
+      - index: 1
+        id: spectrometer_01.slot_01
+        display_name: SP01-S01
+        capacity: 1
+        pose_reference: spectrometer_01_slot_01
+        capabilities: [measurement_position, robot_accessible]
 
 samples:
   - id: sample_001
-    name: Demo Sample
+    name: Demo Sample 001
     sample_type: substrate
     status: READY
-    initial_location: storage_s1
+    initial_location: storage_01.slot_01
     metadata:
-      purpose: phase_1a_demo
+      purpose: phase_1a_1_demo
+  - id: sample_002
+    name: Demo Sample 002
+    sample_type: substrate
+    status: IN_PROCESS
+    initial_location: hotplate_01.slot_01
+  - id: sample_003
+    name: Demo Sample 003
+    sample_type: thin_film
+    status: IN_PROCESS
+    initial_location: hotplate_01.slot_02
+  - id: sample_004
+    name: Demo Sample 004
+    sample_type: substrate
+    status: IN_PROCESS
+    initial_location: hotplate_02.slot_01

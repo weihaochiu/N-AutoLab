@@ -58,3 +58,11 @@ class ActionDefinitionState(StrEnum):
 
     DEFINED = "DEFINED"
     NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
+
+
+class AllocationMode(StrEnum):
+    """Declarative destination intent; resolution is deferred to Phase 1B."""
+
+    EXACT_SLOT = "EXACT_SLOT"
+    EXACT_STATION = "EXACT_STATION"
+    STATION_TYPE = "STATION_TYPE"

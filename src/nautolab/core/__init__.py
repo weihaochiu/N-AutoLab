@@ -1,10 +1,11 @@
-"""Public Phase 1A domain model."""
+"""Public Phase 1A.1 domain model."""
 
-from .action import Action
+from .action import Action, MoveDestination
 from .device import Device
 from .enums import (
     ActionDefinitionState,
     ActionType,
+    AllocationMode,
     DeviceConnectionState,
     DeviceImplementationState,
     SampleHistoryEventType,
@@ -13,6 +14,7 @@ from .enums import (
 from .errors import (
     ConfigurationError,
     DuplicateResourceError,
+    DuplicateSlotIndexError,
     InvalidActionError,
     InvalidCapacityError,
     InvalidIdentifierError,
@@ -22,25 +24,30 @@ from .errors import (
     ResourceNotFoundError,
     StationDisabledError,
     StationOccupiedError,
+    SlotDisabledError,
 )
 from .recipe import Recipe, RecipeStep
 from .sample import Sample, SampleHistoryEntry
 from .station import Station
+from .station_slot import StationSlot
 
 __all__ = [
     "Action",
     "ActionDefinitionState",
     "ActionType",
+    "AllocationMode",
     "ConfigurationError",
     "Device",
     "DeviceConnectionState",
     "DeviceImplementationState",
     "DuplicateResourceError",
+    "DuplicateSlotIndexError",
     "InvalidActionError",
     "InvalidCapacityError",
     "InvalidIdentifierError",
     "InvalidRecipeError",
     "LocationMismatchError",
+    "MoveDestination",
     "NautolabError",
     "Recipe",
     "RecipeStep",
@@ -52,4 +59,6 @@ __all__ = [
     "Station",
     "StationDisabledError",
     "StationOccupiedError",
+    "StationSlot",
+    "SlotDisabledError",
 ]
